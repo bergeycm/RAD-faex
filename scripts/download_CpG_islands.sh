@@ -27,7 +27,8 @@ gunzip -c data/cpgIslandExtUnmasked.txt.gz | \
 	> data/cpgIslandExtUnmasked.chr.txt
 
 # Also make BED format file
-awk -v OFS='\t' '{ print $2,$3,$4,$5$6 }' data/cpgIslandExtUnmasked.chr.txt |
+awk -v OFS='\t' '{ print $2,$3,$4,$5$6 }' data/cpgIslandExtUnmasked.chr.txt | \
+	sort -V -k 1,1 -k2,2n \
 	> data/cpgIslandExtUnmasked.chr.bed
 
 exit
