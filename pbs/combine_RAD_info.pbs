@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #PBS -l nodes=1:ppn=1,walltime=6:00:00,mem=5gb
-#PBS -N get_GC
+#PBS -N combine_RAD_info
 #PBS -M cmb433@nyu.edu
 #PBS -m abe
 #PBS -e localhost:${PBS_O_WORKDIR}/${PBS_JOBNAME}.e${PBS_JOBID}
@@ -15,6 +15,6 @@ working_dir=$PBS_O_WORKDIR
 
 cd $working_dir
 
-sh scripts/get_RADtag_GC.sh
+perl scripts/combine_RADtag_info.pl
 
 exit;
