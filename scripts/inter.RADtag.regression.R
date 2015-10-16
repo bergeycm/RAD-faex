@@ -8,6 +8,7 @@ options(stringsAsFactors = FALSE)
 
 library(reshape)
 library(lme4)
+library(car)
 
 info = read.table("results/RADtags.info.bed")
 cvg  = read.table("results/RADtag.coverage.all.txt")
@@ -26,7 +27,7 @@ names(cvg) = c("chr", "start", "end", ind.info$NGS.ID)
 
 ## Make "chr" into a factor
 
-cvg$chr = as.factor(rad.info$chr)
+cvg$chr = as.factor(cvg$chr)
 
 # ----------------------------------------------------------------------------------------
 # --- Parse RADtag info
@@ -221,19 +222,36 @@ info.cvg.m.ind = merge(info.cvg.m, ind.info, by="NGS.ID")
 # Factorify relevant columns
 
 info.cvg.m.ind = within(info.cvg.m.ind,{
+	NGS.ID = factor(NGS.ID)
+	Pool.ID = factor(Pool.ID)
 	Sample.ID = factor(Sample.ID)
 	Individual.ID = factor(Individual.ID)
 	Sample.type = factor(Sample.type)
 })
 
+#
+
+# Testing for Poisson fit (No it does not fit)
+# http://ase.tufts.edu/gsc/gradresources/guidetomixedmodelsinr/mixed%20model%20guide.html
+
+# poisson.fit = fitdistr(info.cvg.m.ind$num.reads, "Poisson")
+# qqp(info.cvg.m.ind$num.reads, "pois", poisson.fit$estimate)
+
 # ----------------------------------------------------------------------------------------
 # --- Do multiple regression with individual-level info
 # ----------------------------------------------------------------------------------------
 
-lm.ind = lmer(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
+# lm.ind = lmer(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
+# 				gc_perc_5000 + N_count_5000 + 
+# 				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000 + Sample.type +
+# 				(1|NGS.ID) + (1|Pool.ID), data=info.cvg.m.ind)
+
+info.cvg.m.ind.sampled <- 
+
+lm.ind = glmmadmb(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
 				gc_perc_5000 + N_count_5000 + 
 				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000 + Sample.type +
-				(1|NGS.ID) + (1|Pool.ID), data=info.cvg.m.ind)
+				(1|NGS.ID) + (1|Pool.ID), data=info.cvg.m.ind.sampled,family="poisson",zeroInflation=TRUE)
 
 sink("reports/RADtag.lm.indiv.summary.txt")
 	summary(lm.ind)
