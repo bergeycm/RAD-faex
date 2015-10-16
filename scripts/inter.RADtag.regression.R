@@ -24,6 +24,10 @@ ind.info = read.csv("data/fecalRAD_individual_info.csv")
 
 names(cvg) = c("chr", "start", "end", ind.info$NGS.ID)
 
+## Make "chr" into a factor
+
+cvg$chr = as.factor(rad.info$chr)
+
 # ----------------------------------------------------------------------------------------
 # --- Parse RADtag info
 # ----------------------------------------------------------------------------------------
@@ -36,6 +40,10 @@ names(rad.info) = c("chr", "start", "end", rad.vars)
 
 rad.info[,4:ncol(rad.info)] = apply(rad.info[,4:ncol(rad.info)], 2, 
 									function(x) as.numeric(x))
+
+## Make "chr" into a factor
+
+rad.info$chr = as.factor(rad.info$chr)
 
 # ----------------------------------------------------------------------------------------
 # --- Normalize coverage of RADtags for each individual
@@ -210,14 +218,22 @@ names(info.cvg.m)[which(names(info.cvg.m) == "variable")] = "NGS.ID"
 
 info.cvg.m.ind = merge(info.cvg.m, ind.info, by="NGS.ID")
 
+# Factorify relevant columns
+
+info.cvg.m.ind = within(info.cvg.m.ind,{
+	Sample.ID = factor(Sample.ID)
+	Individual.ID = factor(Individual.ID)
+	Sample.type = factor(Sample.type)
+})
+
 # ----------------------------------------------------------------------------------------
 # --- Do multiple regression with individual-level info
 # ----------------------------------------------------------------------------------------
 
 lm.ind = lmer(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
 				gc_perc_5000 + N_count_5000 + 
-				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000 +
-				(1|NGS.ID) + (1|Pool.ID) + (1|Sample.type), data=info.cvg.m.ind)
+				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000 + Sample.type +
+				(1|NGS.ID) + (1|Pool.ID), data=info.cvg.m.ind)
 
 sink("reports/RADtag.lm.indiv.summary.txt")
 	summary(lm.ind)
