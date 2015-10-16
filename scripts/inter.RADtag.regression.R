@@ -6,6 +6,9 @@
 
 options(stringsAsFactors = FALSE)
 
+library(reshape)
+library(lme4)
+
 info = read.table("results/RADtags.info.bed")
 cvg  = read.table("results/RADtag.coverage.all.txt")
 
@@ -181,4 +184,41 @@ sink("reports/RADtag.lm.blood.summary.txt")
 sink()
 sink("reports/RADtag.lm.feces.summary.txt")
 	summary(lm.feces)
+sink()
+
+# ----------------------------------------------------------------------------------------
+# --- Restructure to include individual-level info
+# ----------------------------------------------------------------------------------------
+
+# Copy in length deviation and len_dnorm
+rad.info.lens = rad.info
+rad.info.lens$len.deviation = rad.info.all$len.deviation
+rad.info.lens$len_dnorm     = rad.info.all$len_dnorm
+
+# Merge info and coverage into one massive data.frame
+info.cvg = merge(rad.info.lens, cvg, by=c("chr", "start", "end"))
+
+info.cvg.m = melt(info.cvg, id=names(rad.info.lens))
+
+# Fix names
+names(info.cvg.m)[which(names(info.cvg.m) == "value")]    = "num.reads"
+names(info.cvg.m)[which(names(info.cvg.m) == "variable")] = "NGS.ID"
+
+# ----------------------------------------------------------------------------------------
+# --- Bring in relevant info about individuals
+# ----------------------------------------------------------------------------------------
+
+info.cvg.m.ind = merge(info.cvg.m, ind.info, by="NGS.ID")
+
+# ----------------------------------------------------------------------------------------
+# --- Do multiple regression with individual-level info
+# ----------------------------------------------------------------------------------------
+
+lm.ind = lmer(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
+				gc_perc_5000 + N_count_5000 + 
+				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000 +
+				(1|NGS.ID) + (1|Pool.ID) + (1|Sample.type), data=info.cvg.m.ind)
+
+sink("reports/RADtag.lm.indiv.summary.txt")
+	summary(lm.ind)
 sink()
