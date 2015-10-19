@@ -1,4 +1,7 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
+
+# For Kenny
+# setwd('~/Dropbox/radfaex/RAD-faex/')
 
 # ========================================================================================
 # --- Model RADtag coverage (to explain inter-RADtag variation)
@@ -9,6 +12,7 @@ options(stringsAsFactors = FALSE)
 library(reshape)
 library(lme4)
 library(car)
+library(glmmADMB)
 
 info = read.table("results/RADtags.info.bed")
 cvg  = read.table("results/RADtag.coverage.all.txt")
@@ -246,7 +250,7 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 # 				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000 + Sample.type +
 # 				(1|NGS.ID) + (1|Pool.ID), data=info.cvg.m.ind)
 
-info.cvg.m.ind.sampled <- 
+info.cvg.m.ind.sampled <- info.cvg.m.ind[sample(1:nrow(info.cvg.m.ind),1000,replace=F),]
 
 lm.ind = glmmadmb(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
 				gc_perc_5000 + N_count_5000 + 
