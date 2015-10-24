@@ -1,21 +1,41 @@
 #!/usr/bin/env Rscript
 
-# For Kenny
-# setwd('~/Dropbox/radfaex/RAD-faex/')
-
 # ========================================================================================
 # --- Model RADtag coverage (to explain inter-RADtag variation)
 # ========================================================================================
 
 options(stringsAsFactors = FALSE)
 
-library(reshape)
-library(lme4)
-library(car)
-library(glmmADMB)
+if(!require(reshape)){
+	install.packages("reshape", dependencies=TRUE, repos='http://cran.rstudio.com/')
+	library(reshape)
+}
+if(!require(lme4)){
+	install.packages("lme4", dependencies=TRUE, repos='http://cran.rstudio.com/')
+	library(lme4)
+}
+if(!require(car)){
+	install.packages("car", dependencies=TRUE, repos='http://cran.rstudio.com/')
+	library(car)
+}
+if(!require(R2admb)){
+	install.packages("R2admb", dependencies=TRUE, repos='http://cran.rstudio.com/')
+	library(R2admb)
+}
+if(!require(coda)){
+	install.packages("coda", dependencies=TRUE, repos='http://cran.rstudio.com/')
+	library(coda)
+}
+if(!require(glmmADMB)){
+	install.packages("glmmADMB", repos="http://glmmadmb.r-forge.r-project.org/repos")
+	library(glmmADMB)
+}
 
-info = read.table("results/RADtags.info.bed")
-cvg  = read.table("results/RADtag.coverage.all.txt")
+### For debugging. Set to value other than -1 to load only first N lines
+to.read = 1000
+
+info = read.table("results/RADtags.info.bed",        nrow=to.read)
+cvg  = read.table("results/RADtag.coverage.all.txt", nrow=to.read)
 
 # ----------------------------------------------------------------------------------------
 # --- Bring in individual info
@@ -29,7 +49,7 @@ ind.info = read.csv("data/fecalRAD_individual_info.csv")
 
 names(cvg) = c("chr", "start", "end", ind.info$NGS.ID)
 
-## Make "chr" into a factor
+# Make "chr" into a factor
 
 cvg$chr = as.factor(cvg$chr)
 
@@ -46,7 +66,7 @@ names(rad.info) = c("chr", "start", "end", rad.vars)
 rad.info[,4:ncol(rad.info)] = apply(rad.info[,4:ncol(rad.info)], 2, 
 									function(x) as.numeric(x))
 
-## Make "chr" into a factor
+# Make "chr" into a factor
 
 rad.info$chr = as.factor(rad.info$chr)
 
@@ -233,9 +253,17 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 	Sample.type = factor(Sample.type)
 })
 
-#
+# ----------------------------------------------------------------------------------------
+# --- Create dataset with entirely un-sequenced RADtags removed
+# ----------------------------------------------------------------------------------------
 
-# Testing for Poisson fit (No it does not fit)
+### To be implemented and tested.
+
+# ----------------------------------------------------------------------------------------
+# --- Test for Poisson fit (No, it does not fit)
+# ----------------------------------------------------------------------------------------
+
+# See:
 # http://ase.tufts.edu/gsc/gradresources/guidetomixedmodelsinr/mixed%20model%20guide.html
 
 # poisson.fit = fitdistr(info.cvg.m.ind$num.reads, "Poisson")
@@ -245,17 +273,13 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 # --- Do multiple regression with individual-level info
 # ----------------------------------------------------------------------------------------
 
-# lm.ind = lmer(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
-# 				gc_perc_5000 + N_count_5000 + 
-# 				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000 + Sample.type +
-# 				(1|NGS.ID) + (1|Pool.ID), data=info.cvg.m.ind)
-
-info.cvg.m.ind.sampled <- info.cvg.m.ind[sample(1:nrow(info.cvg.m.ind),1000,replace=F),]
+info.cvg.m.ind.sampled = info.cvg.m.ind[sample(1:nrow(info.cvg.m.ind),1000,replace=F),]
 
 lm.ind = glmmadmb(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
 				gc_perc_5000 + N_count_5000 + 
 				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000 + Sample.type +
-				(1|NGS.ID) + (1|Pool.ID), data=info.cvg.m.ind.sampled,family="poisson",zeroInflation=TRUE)
+				(1|NGS.ID) + (1|Pool.ID), 
+				data=info.cvg.m.ind.sampled, family="poisson", zeroInflation=TRUE)
 
 sink("reports/RADtag.lm.indiv.summary.txt")
 	summary(lm.ind)
