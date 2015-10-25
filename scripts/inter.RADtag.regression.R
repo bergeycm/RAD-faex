@@ -272,6 +272,11 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 # poisson.fit = fitdistr(info.cvg.m.ind$num.reads, "Poisson")
 # qqp(info.cvg.m.ind$num.reads, "pois", poisson.fit$estimate)
 
+num.reads <- info.cvg.m.ind$num.reads + .000001
+
+nbinom.fit <- fitdistr(num.reads, "Negative Binomial")
+qqp(num.reads, "nbinom", size = nbinom.fit$estimate[[1]], mu = nbinom.fit$estimate[[2]])
+
 # ----------------------------------------------------------------------------------------
 # --- Do multiple regression with individual-level info
 # ----------------------------------------------------------------------------------------
@@ -304,8 +309,8 @@ info.cvg.m.ind.sampled = info.cvg.m.ind.subset[sample(1:nrow(info.cvg.m.ind.subs
 
 elapsed = proc.time()['elapsed'] - ptm
 ptm = proc.time()['elapsed']
-lm.ind = glmmadmb(num.reads ~ (len_dnorm + gc_perc + CpG_5000) * Sample.type + (1|NGS.ID),
-					data=info.cvg.m.ind.sampled, family="nbinom", zeroInflation=TRUE)
+lm.ind = glmmadmb(num.reads ~ len_dnorm + (gc_perc + CpG_5000) * Sample.type + (1|NGS.ID),
+					data=info.cvg.m.ind.subset, family="nbinom", zeroInflation=TRUE) ## Try also with zeroInflation=FALSE
 elapsed = proc.time()['elapsed'] - ptm
 cat(elapsed,'seconds passed\n')
 
