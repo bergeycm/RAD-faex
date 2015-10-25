@@ -276,9 +276,10 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 # --- Do multiple regression with individual-level info
 # ----------------------------------------------------------------------------------------
 
-info.cvg.m.ind.subset <- info.cvg.m.ind[,c('num.reads','len_dnorm','gc_perc','CpG_5000','Sample.type','NGS.ID')]
+info.cvg.m.ind.subset = info.cvg.m.ind[,c(	'num.reads','len_dnorm','gc_perc',
+											'CpG_5000','Sample.type','NGS.ID')]
 
-## Center predictors
+# Center predictors
 info.cvg.m.ind.subset <- within(info.cvg.m.ind.subset,{
 	len_dnorm = len_dnorm - mean(len_dnorm)
 #	len.deviation = len.deviation - mean(len.deviation)
@@ -287,7 +288,7 @@ info.cvg.m.ind.subset <- within(info.cvg.m.ind.subset,{
 	CpG_5000 = CpG_5000 - mean(CpG_5000)
 })
 
-## Scale predictors
+# Scale predictors
 info.cvg.m.ind.subset <- within(info.cvg.m.ind.subset,{
 	len_dnorm = len_dnorm * 1000			## Arbitrary rescaling
 #	len.deviation = len.deviation / 1000	## kilobases
@@ -297,12 +298,15 @@ info.cvg.m.ind.subset <- within(info.cvg.m.ind.subset,{
 })
 
 ### For now, just do sample of this melted datset
-info.cvg.m.ind.sampled = info.cvg.m.ind.subset[sample(1:nrow(info.cvg.m.ind.subset),1000,replace=F),]
+info.cvg.m.ind.sampled = info.cvg.m.ind.subset[sample(1:nrow(info.cvg.m.ind.subset),
+														1000,
+														replace=FALSE),]
 
-elapsed <- proc.time()['elapsed'] - ptm
-ptm <- proc.time()['elapsed']
-lm.ind = glmmadmb(num.reads ~ (len_dnorm + gc_perc + CpG_5000) * Sample.type + (1|NGS.ID),data=info.cvg.m.ind.sampled,family="nbinom",zeroInflation=TRUE)
-elapsed <- proc.time()['elapsed'] - ptm
+elapsed = proc.time()['elapsed'] - ptm
+ptm = proc.time()['elapsed']
+lm.ind = glmmadmb(num.reads ~ (len_dnorm + gc_perc + CpG_5000) * Sample.type + (1|NGS.ID),
+					data=info.cvg.m.ind.sampled, family="nbinom", zeroInflation=TRUE)
+elapsed = proc.time()['elapsed'] - ptm
 cat(elapsed,'seconds passed\n')
 
 sink("reports/RADtag.lm.indiv.summary.txt")
