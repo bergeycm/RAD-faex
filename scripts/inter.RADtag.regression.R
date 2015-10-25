@@ -269,21 +269,41 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 # See:
 # http://ase.tufts.edu/gsc/gradresources/guidetomixedmodelsinr/mixed%20model%20guide.html
 
-poisson.fit = fitdistr(info.cvg.m.ind$num.reads, "Poisson")
-qqp(info.cvg.m.ind$num.reads, "pois", poisson.fit$estimate)
+# poisson.fit = fitdistr(info.cvg.m.ind$num.reads, "Poisson")
+# qqp(info.cvg.m.ind$num.reads, "pois", poisson.fit$estimate)
 
 # ----------------------------------------------------------------------------------------
 # --- Do multiple regression with individual-level info
 # ----------------------------------------------------------------------------------------
 
-### For now, just do sample of this melted datset
-info.cvg.m.ind.sampled = info.cvg.m.ind[sample(1:nrow(info.cvg.m.ind),1000,replace=F),]
+info.cvg.m.ind.subset <- info.cvg.m.ind[,c('num.reads','len_dnorm','gc_perc','CpG_5000','Sample.type','NGS.ID')]
 
-lm.ind = glmmadmb(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
-				gc_perc_5000 + N_count_5000 + 
-				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000 + Sample.type +
-				(1|NGS.ID) + (1|Pool.ID), 
-				data=info.cvg.m.ind.sampled, family="poisson", zeroInflation=TRUE)
+## Center predictors
+info.cvg.m.ind.subset <- within(info.cvg.m.ind.subset,{
+	len_dnorm = len_dnorm - mean(len_dnorm)
+#	len.deviation = len.deviation - mean(len.deviation)
+	gc_perc = gc_perc - mean(gc_perc)
+#	CpG_is_dist = CpG_is_dist - mean(CpG_is_dist)
+	CpG_5000 = CpG_5000 - mean(CpG_5000)
+})
+
+## Scale predictors
+info.cvg.m.ind.subset <- within(info.cvg.m.ind.subset,{
+	len_dnorm = len_dnorm * 1000			## Arbitrary rescaling
+#	len.deviation = len.deviation / 1000	## kilobases
+	gc_perc = gc_perc * 100					## Percentages instead of fraction
+#	CpG_is_dist = CpG_is_dist / 1000 		## kilobases
+	CpG_5000 = CpG_5000 /100				## CpG / 100 bases in the greater +- 5kb area
+})
+
+### For now, just do sample of this melted datset
+info.cvg.m.ind.sampled = info.cvg.m.ind.subset[sample(1:nrow(info.cvg.m.ind.subset),1000,replace=F),]
+
+elapsed <- proc.time()['elapsed'] - ptm
+ptm <- proc.time()['elapsed']
+lm.ind = glmmadmb(num.reads ~ (len_dnorm + gc_perc + CpG_5000) * Sample.type + (1|NGS.ID),data=info.cvg.m.ind.sampled,family="nbinom",zeroInflation=TRUE)
+elapsed <- proc.time()['elapsed'] - ptm
+cat(elapsed,'seconds passed\n')
 
 sink("reports/RADtag.lm.indiv.summary.txt")
 	summary(lm.ind)
