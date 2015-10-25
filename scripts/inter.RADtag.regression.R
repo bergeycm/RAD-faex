@@ -54,6 +54,15 @@ names(cvg) = c("chr", "start", "end", ind.info$NGS.ID)
 cvg$chr = as.factor(cvg$chr)
 
 # ----------------------------------------------------------------------------------------
+# --- Create dataset with entirely un-sequenced RADtags removed
+# ----------------------------------------------------------------------------------------
+
+no.hit.RADtags = which(rowSums(cvg[4:ncol(cvg)]) == 0)
+
+info = info[-no.hit.RADtags,]
+cvg  = cvg[-no.hit.RADtags,]
+
+# ----------------------------------------------------------------------------------------
 # --- Parse RADtag info
 # ----------------------------------------------------------------------------------------
 
@@ -67,7 +76,6 @@ rad.info[,4:ncol(rad.info)] = apply(rad.info[,4:ncol(rad.info)], 2,
 									function(x) as.numeric(x))
 
 # Make "chr" into a factor
-
 rad.info$chr = as.factor(rad.info$chr)
 
 # ----------------------------------------------------------------------------------------
@@ -186,18 +194,19 @@ rad.info.all$len_dnorm = rad.info.blood$len_dnorm = rad.info.feces$len_dnorm =
 # --- Visualize relationships
 # ----------------------------------------------------------------------------------------
 
-pairs(rad.info.all[(rad.info.all$rad.mean.cov > 7) & 
-						(rad.info.all$rad.mean.cov < 50),
-						7:15])
-pairs(rad.info.blood[(rad.info.blood$rad.mean.cov > 7) & 
-						(rad.info.blood$rad.mean.cov < 50),
-						7:15])
-pairs(rad.info.all[(rad.info.all$rad.mean.cov > 7) & 
-						(rad.info.all$rad.mean.cov < 50),
-						7:15])
+# Currently skipped
+# pairs(rad.info.all[(rad.info.all$rad.mean.cov > 7) & 
+#						(rad.info.all$rad.mean.cov < 50),
+#						7:15])
+# pairs(rad.info.blood[(rad.info.blood$rad.mean.cov > 7) & 
+#						(rad.info.blood$rad.mean.cov < 50),
+#						7:15])
+# pairs(rad.info.all[(rad.info.all$rad.mean.cov > 7) & 
+#						(rad.info.all$rad.mean.cov < 50),
+#						7:15])
 
 # ----------------------------------------------------------------------------------------
-# --- Do multiple regression
+# --- Do simple multiple regression with everying thrown in
 # ----------------------------------------------------------------------------------------
 
 lm.all = lm(rad.mean.cov ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
@@ -254,25 +263,20 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 })
 
 # ----------------------------------------------------------------------------------------
-# --- Create dataset with entirely un-sequenced RADtags removed
-# ----------------------------------------------------------------------------------------
-
-### To be implemented and tested.
-
-# ----------------------------------------------------------------------------------------
 # --- Test for Poisson fit (No, it does not fit)
 # ----------------------------------------------------------------------------------------
 
 # See:
 # http://ase.tufts.edu/gsc/gradresources/guidetomixedmodelsinr/mixed%20model%20guide.html
 
-# poisson.fit = fitdistr(info.cvg.m.ind$num.reads, "Poisson")
-# qqp(info.cvg.m.ind$num.reads, "pois", poisson.fit$estimate)
+poisson.fit = fitdistr(info.cvg.m.ind$num.reads, "Poisson")
+qqp(info.cvg.m.ind$num.reads, "pois", poisson.fit$estimate)
 
 # ----------------------------------------------------------------------------------------
 # --- Do multiple regression with individual-level info
 # ----------------------------------------------------------------------------------------
 
+### For now, just do sample of this melted datset
 info.cvg.m.ind.sampled = info.cvg.m.ind[sample(1:nrow(info.cvg.m.ind),1000,replace=F),]
 
 lm.ind = glmmadmb(num.reads ~ length + len.deviation + len_dnorm + gc_perc + N_count + 
