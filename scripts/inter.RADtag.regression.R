@@ -4,6 +4,9 @@
 # --- Model RADtag coverage (to explain inter-RADtag variation)
 # ========================================================================================
 
+start.time = format(Sys.time(), "%Y-%m-%d_%H:%M:%S")
+write(paste("Start time is ", start.time) , stderr())
+
 options(stringsAsFactors = FALSE)
 
 if(!require(reshape)){
@@ -35,6 +38,11 @@ if(!require(glmmADMB)){
 args = commandArgs(trailingOnly = TRUE)
 subset.size = as.numeric(args[1])
 write(paste("Processing subset of", subset.size, "lines") , stderr())
+
+# Make output directory
+dir.create("results/coverage_lm", showWarnings = FALSE)
+out.dir = paste0("results/coverage_lm/subset", subset.size, "_", start.time, "/")
+dir.create(out.dir, showWarnings = FALSE)
 
 info.full = read.table("results/RADtags.info.bed")
 cvg.full  = read.table("results/RADtag.coverage.all.txt")
@@ -171,7 +179,7 @@ hit.lens.uniq = unique(hit.lens)
 mode.len = hit.lens.uniq[which.max(tabulate(match(hit.lens, hit.lens.uniq)))]
 med.len  = median(rad.info.all[rad.info.all$rad.mean.cov > 7,]$length)
 
-pdf("reports/RADtag_length_distribution.pdf")
+pdf(paste0(out.dir, "RADtag_length_distribution.pdf"))
 par(mfrow=c(3,1))
 hist(rad.info.all[rad.info.all$rad.mean.cov > 7,]$length, breaks=500, xlim=c(0,500), 
 	main="All Samples", xlab="Length of RADtags with average read count > 7")
@@ -236,10 +244,10 @@ lm.feces = lm(rad.mean.cov ~ length + len.deviation + len_dnorm + gc_perc + N_co
 				gc_perc_5000 + N_count_5000 + 
 				CpG_dist + CpG_ct + CpG_is_dist + CpG_5000, data=rad.info.feces)
 
-sink("reports/RADtag.lm.blood.summary.txt")
+sink(paste0(out.dir, "RADtag.lm.blood.summary.txt"))
 	summary(lm.blood)
 sink()
-sink("reports/RADtag.lm.feces.summary.txt")
+sink(paste0(out.dir, "RADtag.lm.feces.summary.txt"))
 	summary(lm.feces)
 sink()
 
@@ -290,7 +298,7 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 num.reads = info.cvg.m.ind$num.reads + 0.000001
 
 #	nbinom.fit = fitdistr(num.reads, "Negative Binomial")
-#	pdf(file="results/qqp_nbinom_test.pdf")
+#	pdf(file=paste0(out.dir, "qqp_nbinom_test.pdf"))
 #		qqp(num.reads, "nbinom", 
 #			size = nbinom.fit$estimate[[1]], 
 #			mu = nbinom.fit$estimate[[2]])
@@ -322,27 +330,28 @@ info.cvg.m.ind.subset = within(info.cvg.m.ind.subset,{
 })
 
 # Create temporary directory to hold files
-tmp.dir = tempfile(tmpdir = "./tmp", pattern=paste0("subset_",subset.size,"_"))
+tmp.dir = tempfile(	tmpdir = "./tmp", 
+					pattern=paste0("subset_", subset.size, "_", start.time))
 
 ptm = proc.time()
 lm.ind = glmmadmb(num.reads ~ len_dnorm + (gc_perc + CpG_5000) * Sample.type + (1|NGS.ID),
 					data=info.cvg.m.ind.subset, 
-					extra.args="-ndi 200000",
-					admb.opts=admbControl(	shess=FALSE, noinit=FALSE, impSamp=200,
-											maxfn=1000, imaxfn=500, maxph=5),
+					extra.args="-ndi 1000000",
+					#admb.opts=admbControl(	shess=FALSE, noinit=FALSE, impSamp=200,
+					#						maxfn=1000, imaxfn=500, maxph=5),
 					save.dir=tmp.dir,
 					family="nbinom1", 
 					zeroInflation=TRUE) ## Try also with zeroInflation=FALSE
 elapsed = (proc.time() - ptm)['elapsed']
 write(paste(elapsed,'seconds passed\n'), stderr())
 
-sink("reports/RADtag.lm.indiv.summary.txt")
+sink(paste0(out.dir, "RADtag.lm.indiv.summary.txt"))
 	summary(lm.ind)
 sink()
 
 # Save glmmadmb results
 # For now, includes the number of rows read in filename
-save(list="lm.ind", file=paste0("results/lm.ind.indiv.", subset.size, ".Rdata"))
+save(list="lm.ind", file=paste0(out.dir, "lm.ind.indiv.", subset.size, ".Rdata"))
 
 # Remove temporary directory
 #unlink(tmp.dir)
