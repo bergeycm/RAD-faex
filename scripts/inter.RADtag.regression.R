@@ -31,35 +31,11 @@ if(!require(glmmADMB)){
 	library(glmmADMB)
 }
 
-# Get subset size from user
-args = commandArgs(trailingOnly = TRUE)
-subset.size = as.numeric(args[1])
-write(paste("Processing subset of", subset.size, "lines") , stderr())
+### For debugging. Set to value other than -1 to load only first N lines
+to.read = 1000
 
-info.full = read.table("results/RADtags.info.bed")
-cvg.full  = read.table("results/RADtag.coverage.all.txt")
-
-total.RADtags = nrow(info.full)
-
-# ----------------------------------------------------------------------------------------
-# --- Create dataset with entirely un-sequenced RADtags removed
-# ----------------------------------------------------------------------------------------
-
-no.hit.RADtags = which(rowSums(cvg.full[4:ncol(cvg.full)]) == 0)
-
-info.full = info.full[-no.hit.RADtags,]
-cvg.full  = cvg.full[-no.hit.RADtags,]
-
-# ----------------------------------------------------------------------------------------
-# --- Randomly subset RADtags
-# ----------------------------------------------------------------------------------------
-
-subset.ids = sample(1:nrow(info.full), subset.size, replace=FALSE)
-
-info = info.full[subset.ids,]
-cvg  = cvg.full[subset.ids,]
-
-rm(list=c("info.full", "cvg.full"))
+info = read.table("results/RADtags.info.bed",        nrow=to.read)
+cvg  = read.table("results/RADtag.coverage.all.txt", nrow=to.read)
 
 # ----------------------------------------------------------------------------------------
 # --- Bring in individual info
@@ -76,6 +52,15 @@ names(cvg) = c("chr", "start", "end", ind.info$NGS.ID)
 # Make "chr" into a factor
 
 cvg$chr = as.factor(cvg$chr)
+
+# ----------------------------------------------------------------------------------------
+# --- Create dataset with entirely un-sequenced RADtags removed
+# ----------------------------------------------------------------------------------------
+
+no.hit.RADtags = which(rowSums(cvg[4:ncol(cvg)]) == 0)
+
+info = info[-no.hit.RADtags,]
+cvg  = cvg[-no.hit.RADtags,]
 
 # ----------------------------------------------------------------------------------------
 # --- Parse RADtag info
@@ -287,14 +272,10 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 # poisson.fit = fitdistr(info.cvg.m.ind$num.reads, "Poisson")
 # qqp(info.cvg.m.ind$num.reads, "pois", poisson.fit$estimate)
 
-num.reads = info.cvg.m.ind$num.reads + 0.000001
+num.reads <- info.cvg.m.ind$num.reads + .000001
 
-#	nbinom.fit = fitdistr(num.reads, "Negative Binomial")
-#	pdf(file="results/qqp_nbinom_test.pdf")
-#		qqp(num.reads, "nbinom", 
-#			size = nbinom.fit$estimate[[1]], 
-#			mu = nbinom.fit$estimate[[2]])
-#	dev.off()
+nbinom.fit <- fitdistr(num.reads, "Negative Binomial")
+qqp(num.reads, "nbinom", size = nbinom.fit$estimate[[1]], mu = nbinom.fit$estimate[[2]])
 
 # ----------------------------------------------------------------------------------------
 # --- Do multiple regression with individual-level info
@@ -304,7 +285,7 @@ info.cvg.m.ind.subset = info.cvg.m.ind[,c(	'num.reads','len_dnorm','gc_perc',
 											'CpG_5000','Sample.type','NGS.ID')]
 
 # Center predictors
-info.cvg.m.ind.subset = within(info.cvg.m.ind.subset,{
+info.cvg.m.ind.subset <- within(info.cvg.m.ind.subset,{
 	len_dnorm = len_dnorm - mean(len_dnorm)
 #	len.deviation = len.deviation - mean(len.deviation)
 	gc_perc = gc_perc - mean(gc_perc)
@@ -313,7 +294,7 @@ info.cvg.m.ind.subset = within(info.cvg.m.ind.subset,{
 })
 
 # Scale predictors
-info.cvg.m.ind.subset = within(info.cvg.m.ind.subset,{
+info.cvg.m.ind.subset <- within(info.cvg.m.ind.subset,{
 	len_dnorm = len_dnorm * 1000			## Arbitrary rescaling
 #	len.deviation = len.deviation / 1000	## kilobases
 	gc_perc = gc_perc * 100					## Percentages instead of fraction
@@ -321,28 +302,17 @@ info.cvg.m.ind.subset = within(info.cvg.m.ind.subset,{
 	CpG_5000 = CpG_5000 /100				## CpG / 100 bases in the greater +- 5kb area
 })
 
-# Create temporary directory to hold files
-tmp.dir = tempfile(tmpdir = "./tmp", pattern=paste0("subset_",subset.size,"_"))
+### For now, just do sample of this melted datset
+info.cvg.m.ind.sampled = info.cvg.m.ind.subset[sample(1:nrow(info.cvg.m.ind.subset),
+														1000,
+														replace=FALSE),]
 
-ptm = proc.time()
+ptm = proc.time()['elapsed']
 lm.ind = glmmadmb(num.reads ~ len_dnorm + (gc_perc + CpG_5000) * Sample.type + (1|NGS.ID),
-					data=info.cvg.m.ind.subset, 
-					extra.args="-ndi 200000",
-					admb.opts=admbControl(	shess=FALSE, noinit=FALSE, impSamp=200,
-											maxfn=1000, imaxfn=500, maxph=5),
-					save.dir=tmp.dir,
-					family="nbinom1", 
-					zeroInflation=TRUE) ## Try also with zeroInflation=FALSE
-elapsed = (proc.time() - ptm)['elapsed']
-write(paste(elapsed,'seconds passed\n'), stderr())
+					data=info.cvg.m.ind.subset, family="nbinom", zeroInflation=TRUE) ## Try also with zeroInflation=FALSE
+elapsed = proc.time()['elapsed'] - ptm
+cat(elapsed,'seconds passed\n')
 
 sink("reports/RADtag.lm.indiv.summary.txt")
 	summary(lm.ind)
 sink()
-
-# Save glmmadmb results
-# For now, includes the number of rows read in filename
-save(list="lm.ind", file=paste0("results/lm.ind.indiv.", subset.size, ".Rdata"))
-
-# Remove temporary directory
-#unlink(tmp.dir)
