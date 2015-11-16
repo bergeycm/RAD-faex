@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-use Data::Dumper;
-
 # ========================================================================================
 # --- Downsample blood reads to create blood BAMs that are the same size as fecal
 # ========================================================================================

@@ -4,8 +4,6 @@
 # --- Prepare and call make on downsampled BAMs
 # ----------------------------------------------------------------------------------------
 
-cd ../NGS-map
-
 module load samtools
 export SAMTOOLS=/share/apps/samtools/1.2/intel/bin
 
