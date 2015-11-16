@@ -1,0 +1,60 @@
+#!/bin/bash
+
+#PBS -l nodes=1:ppn=8,walltime=40:00:00
+#PBS -N filter_gatk_indiv
+#PBS -m abe
+#PBS -e localhost:${PBS_O_WORKDIR}/${PBS_JOBNAME}.e${PBS_JOBID}.${PBS_ARRAYID}
+#PBS -o localhost:${PBS_O_WORKDIR}/${PBS_JOBNAME}.o${PBS_JOBID}.${PBS_ARRAYID}
+
+# ------------------------------------------------------------------------------
+# Variables
+# ------------------------------------------------------------------------------
+
+working_dir=$PBS_O_WORKDIR
+
+module load jdk/1.7.0_60
+
+GATK=~/exome_macaque/bin/GATK
+GENOME_FA=genomes/papAnu2/papAnu2.fa
+GENOME_NAME=baboon
+
+# ------------------------------------------------------------------------------
+# Run Program
+# ------------------------------------------------------------------------------
+
+cd $working_dir
+
+if [ "$PBS_ARRAYID" -eq 21 ]; then
+	CHROM=X
+else
+	CHROM=$PBS_ARRAYID
+fi
+
+java -Xmx2g -jar ${GATK}/GenomeAnalysisTK.jar \
+	-R ${GENOME_FA} \
+	-T VariantFiltration \
+	-o ${GENOME_NAME}_snps/chr${CHROM}.INDIV.flt.vcf \
+	--variant ${GENOME_NAME}_snps/chr${CHROM}.INDIV.raw.snps.indels.vcf \
+	--filterExpression "QD < 2.0" \
+	--filterName "QDfilter" \
+	--filterExpression "MQ < 40.0" \
+	--filterName "MQfilter" \
+	--filterExpression "FS > 60.0" \
+	--filterName "FSfilter" \
+	--filterExpression "HaplotypeScore > 13.0" \
+	--filterName "HAPSCfilter" \
+	--filterExpression "MQRankSum < -12.5" \
+	--filterName "MQRSfilter" \
+	--filterExpression "ReadPosRankSum < -8.0" \
+	--filterName "RPRSfilter" \
+	--missingValuesInExpressionsShouldEvaluateAsFailing	
+
+# Select variants with "FILTER=PASS" and are SNPs:
+java -jar ${GATK}/GenomeAnalysisTK.jar \
+	-T SelectVariants \
+	-R ${GENOME_FA} \
+	--variant ${GENOME_NAME}_snps/chr${CHROM}.INDIV.flt.vcf \
+	--select_expressions "vc.isNotFiltered() && vc.isSNP()" \
+	-o ${GENOME_NAME}_snps/chr${CHROM}.INDIV.pass.snp.vcf
+
+exit;

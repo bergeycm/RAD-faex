@@ -227,3 +227,26 @@ qsub -t 1-21 pbs/filter_gatk_snps.pbs
 # and make binary PED (BED)
 
 make -s -f full_analysis.mk compare
+
+# ----------------------------------------------------------------------------------------
+# --- Downsample to equalize coverage in blood-feces pairs
+# ----------------------------------------------------------------------------------------
+
+# Do downsampling
+perl ../RAD-faex/scripts/downsample_bloods.pl
+
+# Fake the precursor files to get ready, and then call Make on these downsampled samples
+perl ../RAD-faex/scripts/prepare_to_process_downsampled.sh
+
+# ----------------------------------------------------------------------------------------
+# --- Now call GATK to generate SNP sets that are NOT called in multi-sample mode
+# ----------------------------------------------------------------------------------------
+
+# Copy in GATK-individual-mode PBS script from the other repo
+cp ../RAD-faex/pbs/call_gatk_genotyper_indiv.pbs pbs/
+
+qsub -t 1-20 pbs/call_gatk_genotyper_indiv.pbs
+
+# And filter
+cp ../RAD-faex/pbs/filter_gatk_snps_indiv.pbs pbs/
+qsub -t 1-20 pbs/filter_gatk_snps_indiv.pbs
