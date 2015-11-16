@@ -48,4 +48,7 @@ for DS_BAM in results/*samp*passed.realn.bam; do
 done
 
 # Submit jobs to call make
-### make -s -f full_analysis.mk indiv IND_ID=fecalRAD-BC3-BC7_samp-bc9-bc2
+FIRST=`grep -n "samp" data/individual_list.txt | cut -f1 -d":" | head -n1`
+LAST=`grep -n "samp" data/individual_list.txt | cut -f1 -d":" | tail -n1`
+
+qsub -t ${FIRST}-${LAST} pbs/call_make.pbs
