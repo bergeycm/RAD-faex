@@ -13,8 +13,9 @@
 working_dir=$PBS_O_WORKDIR
 
 module load jdk/1.7.0_60
+module load gatk/3.3-0
 
-GATK=~/exome_macaque/bin/GATK
+GATK=${GATK_ROOT}
 GENOME_FA=genomes/papAnu2/papAnu2.fa
 GENOME_NAME=baboon
 

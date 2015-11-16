@@ -250,3 +250,29 @@ qsub -t 1-20 pbs/call_gatk_genotyper_indiv.pbs
 # And filter
 cp ../RAD-faex/pbs/filter_gatk_snps_indiv.pbs pbs/
 qsub -t 1-20 pbs/filter_gatk_snps_indiv.pbs
+
+# Clean up
+rm baboon_snps/*tmp*
+
+# Fix headers
+# Get rid of, e.g., chr10.raw.snps.indels.tmp12_
+for file in baboon_snps/chr*.INDIV.pass.snp.vcf; do
+    sed -e "s/chr.*\.raw\.snps\.indels\.tmp.*_fecalRAD/fecalRAD/" -i $file
+done
+
+# Steal steps from make to merge multi-sample SNPs, convert VCF file to PED,
+# and make binary PED (BED)
+
+# Merge multi-sample SNPs (autosomes only)
+module load vcftools
+vcf-concat baboon_snps/chr[0-9]*.INDIV.pass.snp.vcf | gzip -c > baboon.INDIV.pass.snp.vcf.gz
+
+# Convert VCF file to PED
+vcftools --gzvcf baboon.INDIV.pass.snp.vcf.gz --plink --out baboon.INDIV.pass.snp;
+
+# Edit the MAP file (baboon.pass.snp.map) and get rid of the "chr"
+# VCF uses, e.g., "chr10" whereas plink wants just "10"
+sed -i -e 's/^chr//' baboon.INDIV.pass.snp.map
+
+# Make binary PED file
+plink --noweb --file baboon.INDIV.pass.snp --make-bed --out baboon.INDIV.pass.snp
