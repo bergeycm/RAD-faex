@@ -29,5 +29,5 @@ file2.m = matrix(c(0,1,2,0,0,1,0,0,0), nrow=3)
 just.file1 = sum(diff.m * file1.m, na.rm=TRUE)
 just.file2 = sum(diff.m * file2.m, na.rm=TRUE)
 
-cat(match.perc, just.file1, just.file2, sep="\t")
+cat(total.N.match, total.N.poss, just.file1, just.file2, sep="\t")
 cat("\n")
