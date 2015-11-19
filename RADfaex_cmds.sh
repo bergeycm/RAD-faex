@@ -133,17 +133,27 @@ qsub pbs/model_RADtag_cvg_20000.pbs
 # --- Quantify allelic dropout by comparing blood and fecal DNA from single individual
 # ----------------------------------------------------------------------------------------
 
-# This uses SNPs called within one individual, not the results of multi-sample SNP calling
 perl scripts/quantify_ADO.pl 2> reports/quantify_ADO_stderr.txt
+
+sh scripts/parse_all_discordance_matrices.sh
+
+Rscript scripts/explore_discordance.R
 
 # ----------------------------------------------------------------------------------------
 # --- Compute stats on missingness
 # ----------------------------------------------------------------------------------------
+
+# This uses SNPs called within one individual, not the results of multi-sample SNP calling
 
 cd /scratch/cmb433/fecalRAD/NGS-map/
 sh scripts/explore_missingness.sh
 Rscript scripts/explore_missingness_further.R
 cd /scratch/cmb433/fecalRAD/RAD_faex/
 
+# ----------------------------------------------------------------------------------------
+# --- Compute and explore heterozygosity
+# ----------------------------------------------------------------------------------------
 
+sh scripts/compute_het.sh
+Rscript scripts/parse_heterozygosity.R
 
