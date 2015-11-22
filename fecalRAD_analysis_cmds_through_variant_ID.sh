@@ -190,6 +190,33 @@ kraken-build --standard --threads 12 --db $DBNAME
 kraken --db $DBNAME seqs.fa
 
 # ----------------------------------------------------------------------------------------
+# --- Downsample to equalize coverage in blood-feces pairs
+# ----------------------------------------------------------------------------------------
+
+# Do downsampling
+perl ../RAD-faex/scripts/downsample_bloods.pl
+
+# Fake the precursor files to get ready, and then call Make on these downsampled samples
+perl ../RAD-faex/scripts/prepare_to_process_downsampled.sh
+
+# Fix the headers in the BAM files
+module load picard-tools/1.129
+module load samtools
+
+for BAM in results/*samp*.PE.bwa.baboon.passed.realn.bam; do
+    cp ${BAM} ${BAM}.backup
+    DS_ID=`echo $BAM | sed -e "s:results/::" -e "s/\.bwa.*//"`
+    java -jar ${PICARD_TOOLS_ROOT}/picard.jar AddOrReplaceReadGroups \
+        INPUT=$BAM.backup \
+        OUTPUT=$BAM \
+        RGLB=${DS_ID} \
+        RGPL=Illumina \
+        RGPU=Group1 \
+        RGSM=${DS_ID}
+    samtools index $BAM
+done
+
+# ----------------------------------------------------------------------------------------
 # --- Do multi-sample SNP calling and filtration
 # ----------------------------------------------------------------------------------------
 
@@ -229,14 +256,11 @@ qsub -t 1-21 pbs/filter_gatk_snps.pbs
 make -s -f full_analysis.mk compare
 
 # ----------------------------------------------------------------------------------------
-# --- Downsample to equalize coverage in blood-feces pairs
-# ----------------------------------------------------------------------------------------
 
-# Do downsampling
-perl ../RAD-faex/scripts/downsample_bloods.pl
+# Rename folder of SNPs to indicate that these were called in multi-sample SNP mode
+mv baboon_snps{,_multi}
 
-# Fake the precursor files to get ready, and then call Make on these downsampled samples
-perl ../RAD-faex/scripts/prepare_to_process_downsampled.sh
+mv baboon.pass.snp.* baboon_snps_multi/
 
 # ----------------------------------------------------------------------------------------
 # --- Now call GATK to generate SNP sets that are NOT called in multi-sample mode
@@ -245,7 +269,7 @@ perl ../RAD-faex/scripts/prepare_to_process_downsampled.sh
 # Copy in GATK-individual-mode PBS script from the other repo
 cp ../RAD-faex/pbs/call_gatk_genotyper_indiv.pbs pbs/
 
-qsub -t 1-20 pbs/call_gatk_genotyper_indiv.pbs
+qsub -t 1-21 pbs/call_gatk_genotyper_indiv.pbs
 
 # Clean up
 rm baboon_snps/*tmp*

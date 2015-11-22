@@ -130,12 +130,19 @@ qsub pbs/model_RADtag_cvg_20000.pbs
 # ========================================================================================
 
 # ----------------------------------------------------------------------------------------
+# --- Compute and explore heterozygosity
+# ----------------------------------------------------------------------------------------
+
+sh scripts/compute_het.sh
+Rscript scripts/parse_heterozygosity.R
+
+# ----------------------------------------------------------------------------------------
 # --- Quantify allelic dropout by comparing blood and fecal DNA from single individual
 # ----------------------------------------------------------------------------------------
 
 perl scripts/quantify_ADO.pl 2> reports/quantify_ADO_stderr.txt
 
-sh scripts/parse_all_discordance_matrices.sh
+sh scripts/parse_all_discordance_matrices.sh > results/discordance.txt
 
 Rscript scripts/explore_discordance.R
 
@@ -149,11 +156,4 @@ cd /scratch/cmb433/fecalRAD/NGS-map/
 sh scripts/explore_missingness.sh
 Rscript scripts/explore_missingness_further.R
 cd /scratch/cmb433/fecalRAD/RAD_faex/
-
-# ----------------------------------------------------------------------------------------
-# --- Compute and explore heterozygosity
-# ----------------------------------------------------------------------------------------
-
-sh scripts/compute_het.sh
-Rscript scripts/parse_heterozygosity.R
 
