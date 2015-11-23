@@ -17,7 +17,8 @@ cd $working_dir
 
 module load bedtools
 
-ALL_BAMS=(../NGS-map/results/fecalRAD-BC*-BC*.PE.bwa.baboon.passed.realn.bam)
+ALL_BAMS=($(ls ../NGS-map/results/fecalRAD-BC*-BC*.PE.bwa.baboon.passed.realn.bam | \
+    grep -v samp))
 THIS_BAM=${ALL_BAMS[$PBS_ARRAYID]}
 
 echo "Computing RADtag coverage for individual with BAM file ${THIS_BAM}..."

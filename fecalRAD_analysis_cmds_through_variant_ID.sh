@@ -274,49 +274,65 @@ qsub -t 1-21 pbs/call_gatk_genotyper_indiv.pbs
 # Clean up
 rm baboon_snps/*tmp*
 
+# Replace QUAL score of "inf" with one more than the maximum QUAL score found
+###sh ../RAD-faex/scripts/replace_inf_in_indiv_vcfs.sh
+
+# Clean up some more
+rm baboon_snps/chr*.INDIV.raw.snps.indels.vcf_BACKUP
+
 # And filter
 cp ../RAD-faex/pbs/filter_gatk_snps_indiv.pbs pbs/
-qsub -t 1-20 pbs/filter_gatk_snps_indiv.pbs
+qsub -t 1-21 pbs/filter_gatk_snps_indiv.pbs
 
-# Fix headers
-# Get rid of, e.g., chr10.raw.snps.indels.tmp12_
-# And replace it with info on sampled used to determine downsampling level
-BAMS=(`ls results/*.PE.bwa.baboon.passed.realn.bam`)
-
-# Downsampled samples to fix
-DS_SAMPS=($(grep "^#CHROM" baboon_snps/chr20.INDIV.pass.snp.vcf | \
-    tr "\t" "\n" | grep "chr" | sed -e "s/chr20/chr[0-9]\*/"))
-
-for ((i=0; i < ${#DS_SAMPS}; i++)); do
-
-    if [[ ${DS_SAMPS[$i]} = *[!\ ]* ]]; then
-    	REPLACEE=${DS_SAMPS[$i]}
-        echo "    Replacing ${DS_SAMPS[$i]}..."
-        DS_IDX=`echo ${DS_SAMPS[$i]} | sed -e "s/.*tmp\([0-9]*\).*/\1/"`
-        echo "    ...with item indexed ${DS_IDX}...";
-        REPLACER=`echo ${BAMS[$DS_IDX - 1]} | sed -e "s/.*fecalRAD/fecalRAD/" -e "s/\.PE.*//"`
-        echo "    ...with ${REPLACE}.";
-        
-        for file in baboon_snps/chr*.INDIV.pass.snp.vcf; do
-            sed -e "s/$REPLACEE/$REPLACER/g" -i $file
-        done
-    fi
-done
+###	# Fix headers
+###	# Get rid of, e.g., chr10.raw.snps.indels.tmp12_
+###	# And replace it with info on sample used to determine downsampling level
+###	BAMS=(`ls results/*.PE.bwa.baboon.passed.realn.bam`)
+###	
+###	# Downsampled samples to fix
+###	DS_SAMPS=($(grep "^#CHROM" baboon_snps/chr20.INDIV.pass.snp.vcf | \
+###	    tr "\t" "\n" | grep "chr" | sed -e "s/chr20/chr[0-9]\*/"))
+###	
+###	for ((i=0; i < ${#DS_SAMPS}; i++)); do
+###	
+###	    if [[ ${DS_SAMPS[$i]} = *[!\ ]* ]]; then
+###	    	REPLACEE=${DS_SAMPS[$i]}
+###	        echo "    Replacing ${DS_SAMPS[$i]}..."
+###	        DS_IDX=`echo ${DS_SAMPS[$i]} | sed -e "s/.*tmp\([0-9]*\).*/\1/"`
+###	        echo "    ...with item indexed ${DS_IDX}...";
+###	        REPLACER=`echo ${BAMS[$DS_IDX - 1]} | sed -e "s/.*fecalRAD/fecalRAD/" -e "s/\.PE.*//"`
+###	        echo "    ...with ${REPLACE}.";
+###	        
+###	        for file in baboon_snps/chr*.INDIV.pass.snp.vcf; do
+###	            sed -e "s/$REPLACEE/$REPLACER/g" -i $file
+###	        done
+###	    fi
+###	done
 
 # Steal steps from make to merge multi-sample SNPs, convert VCF file to PED,
 # and make binary PED (BED)
 
-# Merge multi-sample SNPs (autosomes only)
+# Merge non-multi-sample SNPs (autosomes only)
 module load vcftools
-vcf-concat baboon_snps/chr[0-9]*.INDIV.pass.snp.vcf | gzip -c > baboon.INDIV.pass.snp.vcf.gz
+vcf-concat baboon_snps/chr[0-9]*.INDIV.pass.snp.vcf | \
+    gzip -c > baboon_snps/baboon.INDIV.pass.snp.vcf.gz
 
 # Convert VCF file to PED
-vcftools --gzvcf baboon.INDIV.pass.snp.vcf.gz --plink --out baboon.INDIV.pass.snp;
+vcftools --gzvcf baboon_snps/baboon.INDIV.pass.snp.vcf.gz --plink \
+    --out baboon_snps/baboon.INDIV.pass.snp
 
 # Edit the MAP file (baboon.pass.snp.map) and get rid of the "chr"
 # VCF uses, e.g., "chr10" whereas plink wants just "10"
-sed -i -e 's/^chr//' baboon.INDIV.pass.snp.map
+sed -i -e 's/^chr//' baboon_snps/baboon.INDIV.pass.snp.map
 
 # Make binary PED file
 module load plink
-plink --noweb --file baboon.INDIV.pass.snp --make-bed --out baboon.INDIV.pass.snp
+plink --noweb --file baboon_snps/baboon.INDIV.pass.snp --make-bed \
+    --out baboon_snps/baboon.INDIV.pass.snp
+
+# ----------------------------------------------------------------------------------------
+
+# Rename folder of SNPs to indicate that these were called in non-multi-sample SNP mode
+mv baboon_snps{,_indiv}
+
+# Move on to commands in RADfaex_cmds.sh

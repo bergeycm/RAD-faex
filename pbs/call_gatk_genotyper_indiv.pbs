@@ -51,7 +51,6 @@ for b in ${BAMS[*]}; do
         -I ${b} \
         -stand_call_conf 50.0 \
         -stand_emit_conf 10.0 \
-        -out_mode EMIT_ALL_CONFIDENT_SITES \
         -o ${GENOME_NAME}_snps/chr${CHROM}.raw.snps.indels.tmp${count}.vcf \
         -nct 4 \
         -nt 8 \
