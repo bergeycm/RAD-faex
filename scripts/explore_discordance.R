@@ -4,6 +4,8 @@
 # --- Look at discordance and symmetry in SNPs that are unique to one file
 # ----------------------------------------------------------------------------------------
 
+library(ggplot2)
+
 # Get discordance summary file (output from parse_all_discordance_matrices.R) from user
 args = commandArgs(trailingOnly = TRUE)
 d.file = args[1]	# e.g. "results/discordance.multi.txt"

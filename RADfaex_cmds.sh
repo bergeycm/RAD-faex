@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ../RAD-faex
+
 module load r
 
 # ----------------------------------------------------------------------------------------
@@ -140,11 +142,17 @@ Rscript scripts/parse_heterozygosity.R
 # --- Quantify allelic dropout by comparing blood and fecal DNA from single individual
 # ----------------------------------------------------------------------------------------
 
-perl scripts/quantify_ADO.pl 2> reports/quantify_ADO_stderr.txt
+# Multi-sample mode
+perl scripts/quantify_ADO.pl ../NGS-map/baboon_snps_multi/baboon.pass.snp.vcf.gz
 
-sh scripts/parse_all_discordance_matrices.sh > results/discordance.txt
+# Individual mode
+perl scripts/quantify_ADO.pl \
+    ../NGS-map/baboon_snps_indiv/baboon.INDIV_DIPLOID.pass.snp.vcf.gz
 
-Rscript scripts/explore_discordance.R
+sh scripts/parse_all_discordance_matrices.sh
+
+Rscript scripts/explore_discordance.R results/discordance.multi.txt
+Rscript scripts/explore_discordance.R results/discordance.indiv.txt
 
 # ----------------------------------------------------------------------------------------
 # --- Compute stats on missingness

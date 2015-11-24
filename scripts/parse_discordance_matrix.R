@@ -13,7 +13,7 @@ row.names(diff.m) = diff.m[,1]
 
 # Get rid of name column and make matrix square
 diff.m = diff.m[,2:5]
-dim(diff.m)
+#dim(diff.m)
 
 matching.sites = diff.m[1,1] + diff.m[2,2] + diff.m[3,3]
 matching.N = diff.m[1,1] + (2 * diff.m[2,2]) + diff.m[3,3]
