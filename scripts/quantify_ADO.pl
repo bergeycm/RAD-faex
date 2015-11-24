@@ -17,8 +17,18 @@ my $ind_info_file = "data/fecalRAD_individual_info.csv";
 my $prefix = "../NGS-map/results/";
 my $suffix = ".PE.bwa.baboon.passed.realn.flt.vcf";
 
-# VCF file with non-multi-sample SNP calls from GATK
-my $in_vcf = "../NGS-map/baboon.INDIV.pass.snp.vcf.gz";
+# VCF file with SNP calls from GATK
+# e.g. "../NGS-map/baboon_snps_indiv/baboon.INDIV_DIPLOID.pass.snp.vcf.gz"
+my $in_vcf = shift;
+chomp $in_vcf;
+
+my $rand = int(rand(10000));
+
+# Optional suffix for output files
+my $out_suffix = "";
+if ($in_vcf =~ /INDIV/) {
+	$out_suffix = "_indiv";
+}
 
 my $vcf_prefix = "vcftools --gzvcf $in_vcf --recode --indv ";
 
@@ -65,7 +75,6 @@ while (<INFO>) {
 	if ($this_sample_type eq "feces") {
 		push(@{$poop_list{$this_ind_id}}, $this_sample_id);
 	}
-
 }
 
 # ----------------------------------------------------------------------------------------
@@ -90,28 +99,30 @@ for my $ind (@inds) {
 		print STDERR "\t\tComparing to sample $poop_id (NGS ID $NGS_ID_hash{$poop_id})\n";
 
 		# Pull out individuals to make temporary individual VCF files
-		my $tmp_vcf_cmd_1 = $vcf_prefix . $NGS_ID_hash{$blood_id} . ".PE --out tmp.blood";
-		my $tmp_vcf_cmd_2 = $vcf_prefix . $NGS_ID_hash{$poop_id}  . ".PE --out tmp.feces";
+		my $tmp_vcf_cmd_1 = $vcf_prefix . $NGS_ID_hash{$blood_id} . ".PE ";
+		$tmp_vcf_cmd_1 .= "--out tmp${rand}.blood";
+		my $tmp_vcf_cmd_2 = $vcf_prefix . $NGS_ID_hash{$poop_id}  . ".PE ";
+		$tmp_vcf_cmd_2 .= "--out tmp${rand}.feces";
 
-		print STDERR "CMD: [" . $tmp_vcf_cmd_1 . "]\n";
+		print STDERR "CMD 1: [" . $tmp_vcf_cmd_1 . "]\n";
 		system($tmp_vcf_cmd_1);
-		print STDERR "CMD: [" . $tmp_vcf_cmd_2 . "]\n";
+		print STDERR "CMD 2: [" . $tmp_vcf_cmd_2 . "]\n";
 		system($tmp_vcf_cmd_2);
 
 		# Compare individual VCF files
 
 		# Write individual mapping file
-		open (MAP, ">tmp.map")
+		open (MAP, ">tmp${rand}.map")
 			or die "ERROR: Could not open mapping file. $!\n";
 		print MAP $NGS_ID_hash{$poop_id} . ".PE\t" . $NGS_ID_hash{$blood_id} . ".PE\n";
 		close MAP;
 
-		my $blood_vcf = "tmp.blood.recode.vcf";
-		my $poop_vcf  = "tmp.feces.recode.vcf";
+		my $blood_vcf = "tmp${rand}.blood.recode.vcf";
+		my $poop_vcf  = "tmp${rand}.feces.recode.vcf";
 
 		my $vcf_cmd_base = "vcftools --vcf $blood_vcf --diff $poop_vcf ";
-		$vcf_cmd_base .= "--diff-indv-map tmp.map ";
-		$vcf_cmd_base .= "--out results/diff_${blood_id}_${poop_id} ";
+		$vcf_cmd_base .= "--diff-indv-map tmp${rand}.map ";
+		$vcf_cmd_base .= "--out results/diff_${blood_id}_${poop_id}${out_suffix} ";
 
 		# This fails. Maybe only in later versions of VCFtools
 		# Sites that are common / unique to each file. *.diff.sites_in_files
@@ -123,9 +134,9 @@ for my $ind (@inds) {
 		# Discordance matrix. *.diff.discordance.matrix
 		my $vcf_cmd_discord_matrix = $vcf_cmd_base . "--diff-discordance-matrix";
 
-		print STDERR "CMD: [" . $vcf_cmd_site_discord . "]\n";
+		print STDERR "CMD 3: [" . $vcf_cmd_site_discord . "]\n";
 		system($vcf_cmd_site_discord);
-		print STDERR "CMD: [" . $vcf_cmd_discord_matrix . "]\n";
+		print STDERR "CMD 4: [" . $vcf_cmd_discord_matrix . "]\n";
 		system($vcf_cmd_discord_matrix);
 
 		# Delete temporary VCF files
@@ -152,6 +163,9 @@ for my $ind (@inds) {
 		my $ds_blood_file = $prefix . $ds_blood . $suffix;
 		if (-e $ds_blood_file) {
 			$blood_to_compare = $ds_blood;
+			if ($blood_to_compare !~ /PE$/) {
+				$blood_to_compare .= ".PE";
+			}
 			$poop_to_compare = $NGS_ID_hash{$poop_id} . ".PE";
 			$blood_id_s .= "-samp";
 		}
@@ -162,6 +176,9 @@ for my $ind (@inds) {
 		my $ds_feces_file = $prefix . $ds_feces . $suffix;
 		if (-e $ds_feces_file) {
 			$poop_to_compare = $ds_feces;
+			if ($poop_to_compare !~ /PE$/) {
+				$poop_to_compare .= ".PE";
+			}
 			$blood_to_compare = $NGS_ID_hash{$blood_id} . ".PE";
 			$poop_id_s .= "-samp";
 		}
@@ -169,48 +186,55 @@ for my $ind (@inds) {
 		print STDERR "\t\tComparing blood $blood_to_compare to poop $poop_to_compare.\n";
 
 		# Pull out individuals to make temporary individual VCF files
-		my $tmp_vcf_cmd_1 = $vcf_prefix . $blood_to_compare . " --out tmp.blood";
-		my $tmp_vcf_cmd_2 = $vcf_prefix . $poop_to_compare  . " --out tmp.feces";
+		$tmp_vcf_cmd_1 = "";
+		$tmp_vcf_cmd_2 = "";
+		$tmp_vcf_cmd_1 = $vcf_prefix . $blood_to_compare . " --out tmp${rand}.blood";
+		$tmp_vcf_cmd_2 = $vcf_prefix . $poop_to_compare  . " --out tmp${rand}.feces";
 
-		print STDERR "CMD: [" . $tmp_vcf_cmd_1 . "]\n";
+		print STDERR "CMD 5: [" . $tmp_vcf_cmd_1 . "]\n";
 		system($tmp_vcf_cmd_1);
-		print STDERR "CMD: [" . $tmp_vcf_cmd_2 . "]\n";
+		print STDERR "CMD 6: [" . $tmp_vcf_cmd_2 . "]\n";
 		system($tmp_vcf_cmd_2);
 
 		# Compare individual VCF files
 
 		# Write individual mapping file
-		open (MAP, ">tmp.map")
+		open (MAP, ">tmp${rand}.map")
 			or die "ERROR: Could not open mapping file. $!\n";
 		print MAP $poop_to_compare . "\t" . $blood_to_compare . "\n";
 		close MAP;
 
-		my $blood_vcf = "tmp.blood.recode.vcf";
-		my $poop_vcf  = "tmp.feces.recode.vcf";
+		$blood_vcf = "";
+		$poop_vcf  = "";
+		$blood_vcf = "tmp${rand}.blood.recode.vcf";
+		$poop_vcf  = "tmp${rand}.feces.recode.vcf";
 
-		my $vcf_cmd_base = "vcftools --vcf $blood_vcf --diff $poop_vcf ";
-		$vcf_cmd_base .= "--diff-indv-map tmp.map ";
-		$vcf_cmd_base .= "--out results/diff_${blood_id_s}_${poop_id_s} ";
+		$vcf_cmd_base = "";
+		$vcf_cmd_base = "vcftools --vcf $blood_vcf --diff $poop_vcf ";
+		$vcf_cmd_base .= "--diff-indv-map tmp${rand}.map ";
+		$vcf_cmd_base .= "--out results/diff_${blood_id_s}_${poop_id_s}${out_suffix} ";
 
 		# This fails. Maybe only in later versions of VCFtools
 		# Sites that are common / unique to each file. *.diff.sites_in_files
 		#my $vcf_cmd_site = $vcf_cmd_base . "--diff-site";
 
 		# Discordance on a site by site basis. *.diff.sites
-		my $vcf_cmd_site_discord = $vcf_cmd_base . "--diff-site-discordance";
+		$vcf_cmd_site_discord = "";
+		$vcf_cmd_site_discord = $vcf_cmd_base . "--diff-site-discordance";
 
 		# Discordance matrix. *.diff.discordance.matrix
-		my $vcf_cmd_discord_matrix = $vcf_cmd_base . "--diff-discordance-matrix";
+		$vcf_cmd_discord_matrix = "";
+		$vcf_cmd_discord_matrix = $vcf_cmd_base . "--diff-discordance-matrix";
 
-		print STDERR "CMD: [" . $vcf_cmd_site_discord . "]\n";
+		print STDERR "CMD 7: [" . $vcf_cmd_site_discord . "]\n";
 		system($vcf_cmd_site_discord);
-		print STDERR "CMD: [" . $vcf_cmd_discord_matrix . "]\n";
+		print STDERR "CMD 8: [" . $vcf_cmd_discord_matrix . "]\n";
 		system($vcf_cmd_discord_matrix);
-
+		
 		# Delete temporary VCF files
 		system("rm $blood_vcf");
 		system("rm $poop_vcf");
-		system("rm tmp.map");
+		system("rm tmp${rand}.map");
 	}
 }
 
