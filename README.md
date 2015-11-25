@@ -1,7 +1,7 @@
 # RAD-faex
 This repository contains code used in the development of the **FecalSeq** method for enriching host DNA from feces, 
 by Kenneth Chiou ([website](http://www.kennychiou.com)) and Christina Bergey ([website](http://www.christinabergey.com)).
-A paper describing the method been submitted for publication and is available as a preprint
+A paper describing the method been submitted for publication and is [available as a preprint](http://biorxiv.org/content/early/2015/11/25/032870)
 from [bioRxiv](http://biorxiv.org/about-biorxiv).
 
 The most up to date accompanying labwork protocol can be found in [this repository](https://github.com/kchiou/fecalseq).
