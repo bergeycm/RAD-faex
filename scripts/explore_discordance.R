@@ -57,8 +57,8 @@ sink(paste0(d.file, ".basic.stats.txt"))
 	wilcox.test(d.ds$file1.uniq.perc,  d.ds$file2.uniq.perc, paired=TRUE)	# For paper
 	wilcox.test(d.raw$file1.uniq.perc, d.raw$file2.uniq.perc, paired=TRUE)
 
-	summary(d.ds$file1.uniq.perc)	# For paper
-	summary(d.ds$file2.uniq.perc)	# For paper
+	summary(d.ds$file1.uniq.perc)	# For paper, blood
+	summary(d.ds$file2.uniq.perc)	# For paper, poop
 
 sink()
 

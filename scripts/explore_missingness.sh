@@ -6,8 +6,10 @@ cd /scratch/cmb433/fecalRAD/NGS-map/
 module load plink
 module load r
 
-INPUT_PREFIX=baboon.pass.snp
-
+INPUT_PREFIX=baboon_snps_multi/baboon.pass.snp
+	
+short_name=`echo $INPUT_PREFIX | sed -e "s:baboon_snps_\(.*\)/.*:\1:"`
+	
 # ====================================================================================== #
 # -------------------------------------------------------------------------------------- #
 # --- Missingness and filtration based on missingness
@@ -18,8 +20,7 @@ INPUT_PREFIX=baboon.pass.snp
 # --- Get stats on missingness
 # -------------------------------------------------------------------------------------- #
 
-# === Getting stats on missingness ============================================
-plink --noweb --file ${INPUT_PREFIX} --missing --out reports/${INPUT_PREFIX}
+plink --noweb --file ${INPUT_PREFIX} --missing --out reports/${short_name}
 
 # -------------------------------------------------------------------------------------- #
 # --- Remove SNPs with too much missing data
@@ -32,12 +33,12 @@ plink --noweb --file ${INPUT_PREFIX} --missing --out reports/${INPUT_PREFIX}
 plink --noweb --file ${INPUT_PREFIX} \
 	--geno 0.1 --mind 0.9 \
 	--missing \
-	--make-bed --out results/all.cleaned
-cp results/all.cleaned.log reports/plink_missing_exclusion_main.log
+	--make-bed --out results/${short_name}
+cp results/${short_name}.log reports/${short_name}.plink_missing_exclusion_main.log
 
 # Load file to get final genotyping rate
-plink --noweb --bfile results/all.cleaned --recode --out results/all.cleaned
-cp results/all.cleaned.log reports/plink_info_full.log
+plink --noweb --bfile results/${short_name} --recode --out results/${short_name}
+cp results/${short_name}.log reports/${short_name}_plink_info_full.log
 
 # ====================================================================================== #
 # -------------------------------------------------------------------------------------- #
@@ -54,50 +55,50 @@ cp results/all.cleaned.log reports/plink_info_full.log
 # Parameters are window size, step, and r^2 threshold.
 
 # === Finding SNPs in LD to prune out =========================================
-plink --noweb --bfile results/all.cleaned \
+plink --noweb --bfile results/${short_name} \
 	--indep-pairwise 50 5 0.5 \
-	--out results/all.cleaned
-cp results/all.cleaned.log reports/plink_LD_pruning_part1.log
+	--out results/${short_name}
+cp results/${short_name}.log reports/${short_name}_plink_LD_pruning_part1.log
 
 # -------------------------------------------------------------------------------------- #
 # --- Prune dataset for LD
 # -------------------------------------------------------------------------------------- #
 
 # === Pruning dataset for LD ================================================== #
-plink --noweb --bfile results/all.cleaned \
-	--exclude results/all.cleaned.prune.out \
-	--make-bed --out results/all.cleaned.LDpruned
-cp results/all.cleaned.LDpruned.log reports/plink_LD_pruning_part2.log
+plink --noweb --bfile results/${short_name} \
+	--exclude results/${short_name}.prune.out \
+	--make-bed --out results/${short_name}.LDpruned
+cp results/${short_name}.LDpruned.log reports/${short_name}_plink_LD_pruning_part2.log
 
 # -------------------------------------------------------------------------------------- #
 # --- Make *.genome file
 # -------------------------------------------------------------------------------------- #
 
 # === Making genome file ======================================================
-plink --noweb --bfile results/all.cleaned.LDpruned \
+plink --noweb --bfile results/${short_name}.LDpruned \
 	--genome \
-	--out results/all.cleaned.LDpruned
-cp results/all.cleaned.LDpruned.log reports/plink_genome_file.log
+	--out results/${short_name}.LDpruned
+cp results/${short_name}.LDpruned.log reports/${short_name}.plink_genome_file.log
 
 # -------------------------------------------------------------------------------------- #
 # --- Do multidimensional scaling of similarities (proportions of alleles IBS)
 # -------------------------------------------------------------------------------------- #
 
 # === Doing multidimensional scaling of similarities ========================== #";
-plink --noweb --bfile results/all.cleaned.LDpruned \
-	--read-genome results/all.cleaned.LDpruned.genome \
+plink --noweb --bfile results/${short_name}.LDpruned \
+	--read-genome results/${short_name}.LDpruned.genome \
 	--cluster --mds-plot 2 \
-	--out results/all.cleaned.LDpruned
-cp results/all.cleaned.LDpruned.log reports/plink_mds.log
+	--out results/${short_name}.LDpruned
+cp results/${short_name}.LDpruned.log reports/${short_name}_plink_mds.log
 
 # -------------------------------------------------------------------------------------- #
 # --- Cluster by missingness
 # -------------------------------------------------------------------------------------- #
 
-plink --noweb --bfile results/all.cleaned.LDpruned \
-	--read-genome results/all.cleaned.LDpruned.genome \
+plink --noweb --bfile results/${short_name}.LDpruned \
+	--read-genome results/${short_name}.LDpruned.genome \
 	--cluster missing --mds-plot 2 \
-	--out results/all.cleaned.LDpruned.missing
+	--out results/${short_name}.LDpruned.missing
 
 # ====================================================================================== #
 # -------------------------------------------------------------------------------------- #
@@ -125,9 +126,9 @@ grep "Tx" data/fecalRAD_individual_info.csv | \
 #	OR      Estimated odds ratio (for A1, i.e. A2 is reference)
 
 # LD and missingness pruned dataset
-plink --noweb --bfile results/all.cleaned.LDpruned \
+plink --noweb --bfile results/${short_name}.LDpruned \
 	--make-pheno data/blood_feces_categories.txt feces \
-	--assoc --allow-no-sex --out results/all.cleaned.LDpruned
+	--assoc --allow-no-sex --out results/${short_name}.LDpruned
 
 # All SNPs
 plink --noweb --file ${INPUT_PREFIX} \
@@ -146,11 +147,11 @@ plink --noweb --file ${INPUT_PREFIX} \
 	--out results/all
 
 # LD and missingness pruned dataset
-plink --noweb --bfile results/all.cleaned.LDpruned \
+plink --noweb --bfile results/${short_name}.LDpruned \
 	--make-pheno data/blood_feces_categories.txt feces \
 	--test-missing \
 	--allow-no-sex \
-	--out results/all.cleaned.LDpruned
+	--out results/${short_name}.LDpruned
 
 # ----------------------------------------------------------------------------------------
 # --- Compute distance between samples
@@ -162,6 +163,13 @@ plink --noweb --file ${INPUT_PREFIX} \
 	--out results/all
 
 # LD and missingness pruned dataset
-plink --noweb --bfile results/all.cleaned.LDpruned \
+plink --noweb --bfile results/${short_name}.LDpruned \
 	--distance square flat-missing \
-	--out results/all.cleaned.LDpruned
+	--out results/${short_name}.LDpruned
+
+# ----------------------------------------------------------------------------------------
+# --- Copy results to RAD-faex folder
+# ----------------------------------------------------------------------------------------
+
+cp results/multi* ../RAD-faex/results
+cp results/all*   ../RAD-faex/results
