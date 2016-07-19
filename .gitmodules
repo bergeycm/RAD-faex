@@ -1,0 +1,6 @@
+[submodule "NGS-map"]
+	path = NGS-map
+	url = https://github.com/kchiou/NGS-map.git
+[submodule "demultiplex"]
+	path = demultiplex
+	url = https://github.com/kchiou/demultiplex.git
