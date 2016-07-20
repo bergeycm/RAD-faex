@@ -41,7 +41,7 @@ foreach my $ind (@inds) {
 			
 		my @line_info = split /,/;
 				
-		if ($line_info[5] eq "blood") {
+		if ($line_info[7] eq "blood") {
 		
 			$blood_id = $line_info[0];
 			
