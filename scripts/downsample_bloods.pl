@@ -88,7 +88,7 @@ foreach my $ind (@inds) {
 			
 			my $downsampled_blood_bam = $bam_prefix . $blood_id;
 			$downsampled_blood_bam .= "_samp-";
-			$downsampled_blood_bam .= $fecal_ids[$i];
+			$downsampled_blood_bam .= $blood_id;
 #			$downsampled_blood_bam .= lc (($fecal_ids[$i] =~ /fecalRAD-(.*)/)[0]);
 			$downsampled_blood_bam .= $bam_suffix;
 			
