@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #PBS -l nodes=1:ppn=8,walltime=40:00:00
-#PBS -N gatk_geno_indiv
+#PBS -N GatkGenotype
+#PBS -M klc328@nyu.edu
 #PBS -m abe
 #PBS -e localhost:${PBS_O_WORKDIR}/${PBS_JOBNAME}.e${PBS_JOBID}.${PBS_ARRAYID}
 #PBS -o localhost:${PBS_O_WORKDIR}/${PBS_JOBNAME}.o${PBS_JOBID}.${PBS_ARRAYID}
@@ -10,18 +11,16 @@
 # Variables
 # ------------------------------------------------------------------------------
 
-# Call from NGS-map
-
 working_dir=$PBS_O_WORKDIR
 
-module load jdk/1.7.0_60
+module load jdk/1.8.0
 
-GATK=~/exome_macaque/bin/GATK
+GATK=/home/klc328/downloads/gatk-3.5
 GENOME_FA=genomes/papAnu2/papAnu2.fa
 GENOME_NAME=baboon
 
-module load vcftools
-module load tabix
+module load vcftools/intel/0.1.13
+module load tabix/intel/0.2.6
 
 # ------------------------------------------------------------------------------
 # Run program
