@@ -15,8 +15,8 @@ for DS_BAM in results/*samp*passed.realn.bam; do
     GENOME_NAME=baboon
 
     # Make fake versions of precursor files
-    touch data/${IND_ID}.R1.fastq
-    touch data/${IND_ID}.R2.fastq
+    touch data/${IND_ID}.read1.fastq
+    touch data/${IND_ID}.read2.fastq
     touch reports/${IND_ID}.read1.stats.zip
     touch reports/${IND_ID}.read2.stats.zip
     touch results/${IND_ID}.read1.bwa.${GENOME_NAME}.sai
