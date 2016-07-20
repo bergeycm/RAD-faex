@@ -9,7 +9,7 @@ export SAMTOOLS=/share/apps/samtools/1.3/intel/bin
 
 for DS_BAM in results/*samp*passed.realn.bam; do
 
-    IND_ID=`echo $DS_BAM | sed -e "s/results\///" -e "s/.PE.*//"
+    IND_ID=`echo $DS_BAM | sed -e "s/results\///" -e "s/.PE.*//"`
     IND_ID_W_PE_SE=${IND_ID}.PE
 
     GENOME_NAME=baboon
