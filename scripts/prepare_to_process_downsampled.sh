@@ -4,12 +4,12 @@
 # --- Prepare and call make on downsampled BAMs
 # ----------------------------------------------------------------------------------------
 
-module load samtools
-export SAMTOOLS=/share/apps/samtools/1.2/intel/bin
+module load samtools/intel/1.3
+export SAMTOOLS=/share/apps/samtools/1.3/intel/bin
 
 for DS_BAM in results/*samp*passed.realn.bam; do
 
-    IND_ID=`echo $DS_BAM | sed -e "s/.*fecalRAD-/fecalRAD-/" -e "s/.PE.*//"`
+    IND_ID=`echo $DS_BAM | sed -e "s/results\///" -e "s/.PE.*//"
     IND_ID_W_PE_SE=${IND_ID}.PE
 
     GENOME_NAME=baboon
@@ -40,7 +40,6 @@ for DS_BAM in results/*samp*passed.realn.bam; do
     
     # Index downsampled BAM
     scripts/index_bam.sh results/${IND_ID}.PE.bwa.${GENOME_NAME}.passed.realn.bam
-    
     echo $IND_ID >> data/individual_list.txt
 
 done

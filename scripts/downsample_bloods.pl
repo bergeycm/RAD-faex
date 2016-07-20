@@ -23,8 +23,6 @@ foreach my $ind (@inds) {
 	my $awk_cmd = "awk -F \",\" '{ if (\$5 == \"" . $ind . "\") print \$0 }' ";
 	$awk_cmd .= "../data/individual_info.csv";
 	
-	print STDERR "$awk_cmd";
-	
 	my $sample_info = `$awk_cmd`;
 	
 	my @sample_info = split /\n/, $sample_info;
