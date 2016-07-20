@@ -95,6 +95,8 @@ qsub -t 1-21 pbs/filter_gatk_snps.pbs
 # --- Downsample to equalize coverage in blood-feces pairs
 # ----------------------------------------------------------------------------------------
 
+module load samtools/intel/1.3
+
 # Do downsampling
 perl ../scripts/downsample_bloods.pl
 
@@ -103,7 +105,6 @@ perl ../scripts/prepare_to_process_downsampled.sh
 
 # Fix the headers in the BAM files
 module load picard-tools/1.129
-module load samtools
 
 for BAM in results/*samp*.PE.bwa.baboon.passed.realn.bam; do
     cp ${BAM} ${BAM}.backup
