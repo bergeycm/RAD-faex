@@ -9,11 +9,11 @@ use warnings;
 
 my @inds = ("Tx01", "Tx02", "Tx05", "Tx09", "Tx10");
 
-my $grep_prefix = "grep '^Mapped' ../NGS-map/reports/";
+my $grep_prefix = "grep '^Mapped' reports/";
 my $grep_suffix = ".PE.bwa.baboon.aln_stats.passed.realn.txt | ";
 $grep_suffix   .= 'sed -e "s/Mapped reads: *\([0-9]*\)\t.*/\1/"';
 
-my $bam_prefix = "../NGS-map/results/";
+my $bam_prefix = "results/";
 my $bam_suffix = ".PE.bwa.baboon.passed.realn.bam";
 
 foreach my $ind (@inds) {
@@ -21,7 +21,7 @@ foreach my $ind (@inds) {
 	print STDERR "PROCESSING $ind:\n";
 
 	my $awk_cmd = "awk -F \",\" '{ if (\$5 == \"" . $ind . "\") print \$0 }' ";
-	$awk_cmd .= "data/fecalRAD_individual_info.csv";
+	$awk_cmd .= "../data/individual_info.csv";
 	
 	my $sample_info = `$awk_cmd`;
 	
@@ -86,7 +86,7 @@ foreach my $ind (@inds) {
 			
 			my $downsampled_blood_bam = $bam_prefix . $blood_id;
 			$downsampled_blood_bam .= "_samp-";
-			$downsampled_blood_bam .= lc (($fecal_ids[$i] =~ /fecalRAD-(.*)/)[0]);
+#			$downsampled_blood_bam .= lc (($fecal_ids[$i] =~ /fecalRAD-(.*)/)[0]);
 			$downsampled_blood_bam .= $bam_suffix;
 			
 			my $sam_cmd = "samtools view -s " . $fecal_perc;
@@ -104,7 +104,7 @@ foreach my $ind (@inds) {
 			
 			my $downsampled_feces_bam = $bam_prefix . $fecal_ids[$i];
 			$downsampled_feces_bam .= "_samp-";
-			$downsampled_feces_bam .= lc (($blood_id =~ /fecalRAD-(.*)/)[0]);
+#			$downsampled_feces_bam .= lc (($blood_id =~ /fecalRAD-(.*)/)[0]);
 			$downsampled_feces_bam .= $bam_suffix;
 			
 			my $sam_cmd = "samtools view -s " . (1 / $fecal_perc);

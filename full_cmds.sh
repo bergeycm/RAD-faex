@@ -96,10 +96,10 @@ qsub -t 1-21 pbs/filter_gatk_snps.pbs
 # ----------------------------------------------------------------------------------------
 
 # Do downsampling
-perl ../RAD-faex/scripts/downsample_bloods.pl
+perl ../scripts/downsample_bloods.pl
 
 # Fake the precursor files to get ready, and then call Make on these downsampled samples
-perl ../RAD-faex/scripts/prepare_to_process_downsampled.sh
+perl ../scripts/prepare_to_process_downsampled.sh
 
 # Fix the headers in the BAM files
 module load picard-tools/1.129
