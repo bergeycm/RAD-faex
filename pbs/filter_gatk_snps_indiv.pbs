@@ -1,7 +1,8 @@
 #!/bin/bash
 
 #PBS -l nodes=1:ppn=8,walltime=40:00:00
-#PBS -N filter_gatk_indiv
+#PBS -N GatkFilterSnpsIndiv
+#PBS -M klc328@nyu.edu
 #PBS -m abe
 #PBS -e localhost:${PBS_O_WORKDIR}/${PBS_JOBNAME}.e${PBS_JOBID}.${PBS_ARRAYID}
 #PBS -o localhost:${PBS_O_WORKDIR}/${PBS_JOBNAME}.o${PBS_JOBID}.${PBS_ARRAYID}
@@ -12,10 +13,9 @@
 
 working_dir=$PBS_O_WORKDIR
 
-module load jdk/1.7.0_60
-module load gatk/3.3-0
+module load jdk/1.8.0
 
-GATK=${GATK_ROOT}
+GATK=/home/klc328/downloads/gatk-3.5
 GENOME_FA=genomes/papAnu2/papAnu2.fa
 GENOME_NAME=baboon
 

@@ -168,7 +168,7 @@ rm baboon_snps/*tmp*
 rm baboon_snps/chr*.INDIV.raw.snps.indels.vcf_BACKUP
 
 # And filter
-cp ../RAD-faex/pbs/filter_gatk_snps_indiv.pbs pbs/
+cp ../pbs/filter_gatk_snps_indiv.pbs pbs/
 qsub -t 1-21 pbs/filter_gatk_snps_indiv.pbs
 
 ###	# Fix headers
@@ -200,7 +200,7 @@ qsub -t 1-21 pbs/filter_gatk_snps_indiv.pbs
 # and make binary PED (BED)
 
 # Merge non-multi-sample SNPs (autosomes only)
-module load vcftools
+module load vcftools/intel/0.1.13
 vcf-concat baboon_snps/chr[0-9]*.INDIV.pass.snp.vcf | \
     gzip -c > baboon_snps/baboon.INDIV.pass.snp.vcf.gz
 
@@ -213,7 +213,7 @@ vcftools --gzvcf baboon_snps/baboon.INDIV.pass.snp.vcf.gz --plink \
 sed -i -e 's/^chr//' baboon_snps/baboon.INDIV.pass.snp.map
 
 # Make binary PED file
-module load plink
+module load plink/intel/1.90p
 plink --noweb --file baboon_snps/baboon.INDIV.pass.snp --make-bed \
     --out baboon_snps/baboon.INDIV.pass.snp
 
