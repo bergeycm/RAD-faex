@@ -55,7 +55,7 @@ java -jar ${GATK}/GenomeAnalysisTK.jar \
 	-T SelectVariants \
 	-R ${GENOME_FA} \
 	--variant ${GENOME_NAME}_snps/chr${CHROM}.INDIV.flt.vcf \
-	--select_expressions "vc.isNotFiltered() && vc.isSNP()" \
+	-select "vc.isNotFiltered() && vc.isSNP()" \
 	-o ${GENOME_NAME}_snps/chr${CHROM}.INDIV.pass.snp.vcf
 
 exit;

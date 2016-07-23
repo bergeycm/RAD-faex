@@ -147,7 +147,7 @@ scripts/merge_snps.sh baboon
 # Rename folder of SNPs to indicate that these were called in multi-sample SNP mode
 mv baboon_snps{,_multi}
 
-mv baboon.pass.snp.* baboon_snps_multi/
+mv baboon.* baboon_snps_multi/
 
 # ----------------------------------------------------------------------------------------
 # --- Now call GATK to generate SNP sets that are NOT called in multi-sample mode
@@ -165,7 +165,7 @@ rm baboon_snps/*tmp*
 ###sh ../RAD-faex/scripts/replace_inf_in_indiv_vcfs.sh
 
 # Clean up some more
-rm baboon_snps/chr*.INDIV.raw.snps.indels.vcf_BACKUP
+# rm baboon_snps/chr*.INDIV.raw.snps.indels.vcf_BACKUP
 
 # And filter
 cp ../pbs/filter_gatk_snps_indiv.pbs pbs/
