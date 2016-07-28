@@ -325,20 +325,9 @@ scripts/coverage_length_heatmap.R
 # --- Combine RADtag info
 # ----------------------------------------------------------------------------------------
 
-# Called with:
-#     qsub pbs/combine_RAD_info.pbs
 # Generates results/RADtags.info.bed
 
-# perl scripts/combine_RADtag_info.pl > results/RADtags.info.bed
 qsub pbs/combine_RAD_info.pbs
-
-
-
-
-
-
-
-
 
 # ----------------------------------------------------------------------------------------
 # --- Explore how coverage varies by sample, sample type, mapped read count, etc.
@@ -372,8 +361,8 @@ scripts/plot_coverage.R
 # --- Compute and explore heterozygosity
 # ----------------------------------------------------------------------------------------
 
-sh scripts/compute_het.sh
-Rscript scripts/parse_heterozygosity.R
+scripts/compute_het.sh
+scripts/parse_heterozygosity.R
 
 # ----------------------------------------------------------------------------------------
 # --- Quantify allelic dropout by comparing blood and fecal DNA from single individual
