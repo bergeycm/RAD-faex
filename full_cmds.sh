@@ -293,6 +293,19 @@ qsub pbs/call_CpG_finder.pbs
 
 qsub pbs/call_closest_CpG_finder.pbs
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ========================================================================================
 #  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # ========================================================================================
@@ -305,7 +318,8 @@ qsub pbs/call_closest_CpG_finder.pbs
 #     qsub -t 0-33 pbs/get_RAD_cov.pbs
 # Generates results/${ID}.gt1.cov.bed
 
-sh scripts/get_RADtag_cov.sh
+# sh scripts/get_RADtag_cov.sh
+qsub -t 0-33 pbs/get_RAD_cov.pbs
 
 # ----------------------------------------------------------------------------------------
 # --- Combine RADtag coverage from all individuals
@@ -313,7 +327,7 @@ sh scripts/get_RADtag_cov.sh
 
 # Generates results/RADtag.coverage.all.txt
 
-sh scripts/combine_coverage.sh
+scripts/combine_coverage.sh
 
 # ----------------------------------------------------------------------------------------
 # --- Plot heatmap of coverage and RADtag length
@@ -321,7 +335,7 @@ sh scripts/combine_coverage.sh
 
 # Generates reports/fecalRAD-BC*-BC*.gt1.cov.pdf
 
-Rscript scripts/coverage_length_heatmap.R
+scripts/coverage_length_heatmap.R
 
 # ----------------------------------------------------------------------------------------
 # --- Combine RADtag info
@@ -331,7 +345,8 @@ Rscript scripts/coverage_length_heatmap.R
 #     qsub pbs/combine_RAD_info.pbs
 # Generates results/RADtags.info.bed
 
-perl scripts/combine_RADtag_info.pl > results/RADtags.info.bed
+# perl scripts/combine_RADtag_info.pl > results/RADtags.info.bed
+qsub pbs/combine_RAD_info.pbs
 
 # ----------------------------------------------------------------------------------------
 # --- Explore how coverage varies by sample, sample type, mapped read count, etc.
@@ -340,7 +355,7 @@ perl scripts/combine_RADtag_info.pl > results/RADtags.info.bed
 # Generates reports/RADtag_count_gtNreads.pdf
 #           reports/RADtag_count_curves_by_total_mapped.pdf
 
-Rscript scripts/plot_coverage.R
+scripts/plot_coverage.R
 
 # ========================================================================================
 #  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

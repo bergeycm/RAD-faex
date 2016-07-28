@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 
 # ----------------------------------------------------------------------------------------
 # --- Plot heatmap of coverage and RADtag length

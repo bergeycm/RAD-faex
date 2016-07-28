@@ -20,7 +20,7 @@ function compute_cov {
 
 # Run all if no BAM file passed
 if [ $# -eq 0 ]; then
-    for THIS_BAM in ../NGS-map/results/fecalRAD-BC*-BC*.PE.bwa.baboon.passed.realn.bam; do
+    for THIS_BAM in NGS-map/results/fecalRAD-BC*-BC*.PE.bwa.baboon.passed.realn.bam; do
         compute_cov $THIS_BAM
     done;
 else
