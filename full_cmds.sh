@@ -293,19 +293,6 @@ qsub pbs/call_CpG_finder.pbs
 
 qsub pbs/call_closest_CpG_finder.pbs
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ========================================================================================
 #  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # ========================================================================================
@@ -314,11 +301,8 @@ qsub pbs/call_closest_CpG_finder.pbs
 # --- Compute coverage within all RADtags (from simulation)
 # ----------------------------------------------------------------------------------------
 
-# Called with:
-#     qsub -t 0-33 pbs/get_RAD_cov.pbs
 # Generates results/${ID}.gt1.cov.bed
 
-# sh scripts/get_RADtag_cov.sh
 qsub -t 0-33 pbs/get_RAD_cov.pbs
 
 # ----------------------------------------------------------------------------------------
@@ -347,6 +331,14 @@ scripts/coverage_length_heatmap.R
 
 # perl scripts/combine_RADtag_info.pl > results/RADtags.info.bed
 qsub pbs/combine_RAD_info.pbs
+
+
+
+
+
+
+
+
 
 # ----------------------------------------------------------------------------------------
 # --- Explore how coverage varies by sample, sample type, mapped read count, etc.

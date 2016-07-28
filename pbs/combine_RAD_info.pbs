@@ -15,6 +15,6 @@ working_dir=$PBS_O_WORKDIR
 
 cd $working_dir
 
-perl scripts/combine_RADtag_info.pl
+perl scripts/combine_RADtag_info.pl > results/RADtags.info.bed
 
 exit;
