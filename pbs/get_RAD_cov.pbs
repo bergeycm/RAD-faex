@@ -17,7 +17,7 @@ cd $working_dir
 
 module load bedtools/intel/2.25.0
 
-ALL_BAMS=($(ls NGS-map/results/fecalRAD-BC*-BC*.PE.bwa.baboon.passed.realn.bam | \
+ALL_BAMS=($(ls NGS-map/results/*.PE.bwa.baboon.passed.realn.bam | \
     grep -v samp))
 THIS_BAM=${ALL_BAMS[$PBS_ARRAYID]}
 
