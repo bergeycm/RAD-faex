@@ -5,7 +5,7 @@ use warnings;
 
 my $verbose = 0;
 
-my $genome = "../NGS-map/genomes/papAnu2/papAnu2.fa";
+my $genome = "NGS-map/genomes/papAnu2/papAnu2.fa";
 
 open (GEN, "<$genome")
 	or die "ERROR: Could not open genome FASTA, $genome. $!\n";
