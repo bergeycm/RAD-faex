@@ -243,11 +243,10 @@ module load r/intel/3.2.2
 # --- Simulate ddRAD digestion -----------------------------------------------------------
 # ----------------------------------------------------------------------------------------
 
-# Called with:
-#     qsub pbs/digest_sim.pbs
+# The folder data/papAnu2/ should contain fastas for each chromosome named chr[1-20,X].fa
 # Generates results/chr*.bed
 
-Rscript scripts/ddRAD_sim.R $THIS_CHR_FA
+qsub -t 1-21 pbs/digest_sim.pbs
 
 # ----------------------------------------------------------------------------------------
 # --- Combine BED files of RADtags
@@ -255,7 +254,7 @@ Rscript scripts/ddRAD_sim.R $THIS_CHR_FA
 
 # Generates results/RADtags.bed
 
-sh scripts/combine_RADtag_beds.sh
+scripts/combine_RADtag_beds.sh
 
 # ----------------------------------------------------------------------------------------
 # --- Compute GC within all RADtags (from simulation) as well as in the larger region

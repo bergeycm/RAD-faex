@@ -4,7 +4,7 @@
 # --- Compute GC within all RADtags (from simulation) as well as in the larger region
 # ----------------------------------------------------------------------------------------
 
-module load bedtools
+module load bedtools/intel/2.25.0
 
 # --- Compute GC within RAD tags
     
