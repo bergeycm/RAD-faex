@@ -8,7 +8,7 @@ module load bedtools
 
 function compute_cov {
     BAM=$1
-    ID=$(echo $BAM | sed "s:.*\/\(fecalRAD-.*\)\.PE\.bwa.*:\\1:")
+    ID=$(echo $BAM | sed "s:.*\/\(.*\)\.PE\.bwa.*:\\1:")
     bedtools coverage \
         -counts \
         -a results/RADtags.bed \
@@ -20,7 +20,7 @@ function compute_cov {
 
 # Run all if no BAM file passed
 if [ $# -eq 0 ]; then
-    for THIS_BAM in NGS-map/results/fecalRAD-BC*-BC*.PE.bwa.baboon.passed.realn.bam; do
+    for THIS_BAM in NGS-map/results/*.PE.bwa.baboon.passed.realn.bam; do
         compute_cov $THIS_BAM
     done;
 else
