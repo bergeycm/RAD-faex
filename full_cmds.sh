@@ -266,7 +266,13 @@ scripts/combine_RADtag_beds.sh
 #           results/RADtags.slop${REGION_EXPANSION}.bed
 #           results/RADtags.slop${REGION_EXPANSION}.gc.bed
 
-sh scripts/get_RADtag_GC.sh
+qsub pbs/compute_GC.pbs
+
+
+
+
+
+
 
 # ----------------------------------------------------------------------------------------
 # --- Download CpG islands
