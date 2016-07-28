@@ -17,7 +17,7 @@ out.txt = paste0(het.file, ".wilcox.txt")
 
 het = read.table(het.file, header=TRUE)
 
-ind.info = read.csv("data/fecalRAD_individual_info.csv")
+ind.info = read.csv("data/individual_info.csv")
 
 het$NGS.ID = het$INDV
 het$NGS.ID = gsub("_samp.*", "", het$NGS.ID)
