@@ -333,7 +333,7 @@ scripts/combine_coverage.sh
 # --- Plot heatmap of coverage and RADtag length
 # ----------------------------------------------------------------------------------------
 
-# Generates reports/fecalRAD-BC*-BC*.gt1.cov.pdf
+# Generates reports/*.gt1.cov.pdf
 
 scripts/coverage_length_heatmap.R
 

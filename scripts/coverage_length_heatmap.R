@@ -5,7 +5,7 @@
 # ----------------------------------------------------------------------------------------
 
 library(ggplot2)
-library(reshape)
+library(reshape2)
 
 cov.beds = list.files(path="results/", pattern="*.gt1.cov.bed")
 
