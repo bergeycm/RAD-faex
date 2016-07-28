@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #PBS -l nodes=1:ppn=1,walltime=6:00:00,mem=20gb
-#PBS -N find_near_CpG
-#PBS -M cmb433@nyu.edu
+#PBS -N FindNearCpG
+#PBS -M klc328@nyu.edu
 #PBS -m abe
 #PBS -e localhost:${PBS_O_WORKDIR}/${PBS_JOBNAME}.e${PBS_JOBID}
 #PBS -o localhost:${PBS_O_WORKDIR}/${PBS_JOBNAME}.o${PBS_JOBID}

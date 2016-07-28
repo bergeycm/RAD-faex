@@ -268,12 +268,6 @@ scripts/combine_RADtag_beds.sh
 
 qsub pbs/compute_GC.pbs
 
-
-
-
-
-
-
 # ----------------------------------------------------------------------------------------
 # --- Download CpG islands
 # ----------------------------------------------------------------------------------------
@@ -281,27 +275,23 @@ qsub pbs/compute_GC.pbs
 # Generates data/cpgIslandExtUnmasked.chr.txt
 #           data/cpgIslandExtUnmasked.chr.bed
 
-sh scripts/download_CpG_islands.sh
+scripts/download_CpG_islands.sh
 
 # ----------------------------------------------------------------------------------------
 # --- Find CpGs
 # ----------------------------------------------------------------------------------------
 
-# Called with:
-#     qsub pbs/call_CpG_finder.pbs
 # Generates results/papAnu2.CpG.bed
 
-perl scripts/find_CpGs.pl > results/papAnu2.CpG.bed
+qsub pbs/call_CpG_finder.pbs
 
 # ----------------------------------------------------------------------------------------
 # --- Find closest CpG
 # ----------------------------------------------------------------------------------------
 
-# Called with:
-#     qsub pbs/call_closest_CpG_finder.pbs 
 # Generates results/RADtags.nearestCpGisland.bed
 
-sh find_closest_CpG.sh
+qsub pbs/call_closest_CpG_finder.pbs
 
 # ========================================================================================
 #  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

@@ -4,7 +4,7 @@
 # --- Find closest feature (CpG site, CpG island) and local density (CpG)
 # ========================================================================================
 
-module load bedtools
+module load bedtools/intel/2.25.0
 
 # === CpG sites ==========================================================================
 
@@ -33,13 +33,13 @@ echo "Finding local CpG density..."
 REGION_EXPANSION=5000
 
 # Make genome file
-cut -f1-2 ../NGS-map/genomes/papAnu2/papAnu2.fa.fai \
-    > ../NGS-map/genomes/papAnu2/papAnu2.genome
+cut -f1-2 NGS-map/genomes/papAnu2/papAnu2.fa.fai \
+    > NGS-map/genomes/papAnu2/papAnu2.genome
     
 bedtools slop \
     -i results/RADtags.bed \
     -b ${REGION_EXPANSION} \
-    -g ../NGS-map/genomes/papAnu2/papAnu2.genome \
+    -g NGS-map/genomes/papAnu2/papAnu2.genome \
     > results/RADtags.slop${REGION_EXPANSION}.bed
 
 bedtools intersect -c \
