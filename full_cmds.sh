@@ -303,7 +303,7 @@ qsub pbs/call_closest_CpG_finder.pbs
 
 # Generates results/${ID}.gt1.cov.bed
 
-qsub -t 0-91 pbs/get_RAD_cov.pbs
+qsub -t 0-78 pbs/get_RAD_cov.pbs
 
 # ----------------------------------------------------------------------------------------
 # --- Combine RADtag coverage from all individuals
@@ -329,35 +329,25 @@ scripts/coverage_length_heatmap.R
 
 qsub pbs/combine_RAD_info.pbs
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ----------------------------------------------------------------------------------------
 # --- Explore how coverage varies by sample, sample type, mapped read count, etc.
 # ----------------------------------------------------------------------------------------
 
 # Generates reports/RADtag_count_gtNreads.pdf
 #           reports/RADtag_count_curves_by_total_mapped.pdf
+# Note the work in progress: Plot residuals by various variables
 
 scripts/plot_coverage.R
+
+
+
+
+
+
+
+
+
+
 
 # ========================================================================================
 #  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

@@ -30,11 +30,21 @@ cvg  = cvg.full
 # --- Bring in individual info
 # ----------------------------------------------------------------------------------------
 
-ind.info = read.csv("data/individual_info.csv")
+ind.info = read.csv("data/individual_info.csv",stringsAsFactor=FALSE)
 
 # Add sample names to individual coverage
 # Warning: This assumes that the individuals are in the right order, 
 # same as ls -v would produce
+
+# The following lines fix this
+ind.order = system('ls -v results/*.cov.bed | grep -v gt1',intern=TRUE)
+ind.order = gsub('results/(.+)\\.cov.bed','\\1',ind.order)
+ind.info = ind.info[match(ind.order,ind.info$NGS.ID),]
+
+# Also fix the blood types
+ind.info$Sample.type = as.character(ind.info$Sample.type)
+ind.info$Sample.type[ind.info$Sample.type %in% 'blood2'] = 'blood'
+ind.info$Sample.type = factor(ind.info$Sample.type,levels=c('blood','feces'))
 
 names(cvg) = c("chr", "start", "end", ind.info$NGS.ID)
 
@@ -70,9 +80,14 @@ hits.by.cov = do.call(rbind, lapply(1:50, get.num.tags.gt.N))
 hits.by.cov.na = hits.by.cov
 hits.by.cov.na[hits.by.cov.na == 0] = NA
 
+ind.info$col = 'blood'
+ind.info$col[ind.info$Sample.type %in% 'feces'] = 'feces'
+ind.info$col[ind.info$Run %in% 5] = 'feces2'
+ind.info$col = factor(ind.info$col,levels=c('blood','feces','feces2'))
+
 pdf(file="reports/RADtag_count_gtNreads.pdf")
 	matplot(hits.by.cov.na, type='l', 
-		col=c('red', 'darkgoldenrod')[factor(ind.info$Sample.type)], 
+		col=c('red', 'darkgoldenrod','darkolivegreen3')[factor(ind.info$col)], 
 		lty=as.numeric(factor(ind.info$Sample.type)), 
 		ylab="Number of RADtags with more than N reads", 
 		xlab="Number of reads (N)")
