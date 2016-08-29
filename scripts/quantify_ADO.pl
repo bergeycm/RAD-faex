@@ -12,13 +12,13 @@ use warnings;
 
 my @inds = ("Tx01", "Tx02", "Tx05", "Tx07", "Tx09", "Tx10");
 
-my $ind_info_file = "data/fecalRAD_individual_info.csv";
+my $ind_info_file = "data/individual_info.csv";
 
-my $prefix = "../NGS-map/results/";
+my $prefix = "NGS-map/results/";
 my $suffix = ".PE.bwa.baboon.passed.realn.flt.vcf";
 
 # VCF file with SNP calls from GATK
-# e.g. "../NGS-map/baboon_snps_indiv/baboon.INDIV_DIPLOID.pass.snp.vcf.gz"
+# e.g. "NGS-map/baboon_snps_indiv/baboon.INDIV_DIPLOID.pass.snp.vcf.gz"
 my $in_vcf = shift;
 chomp $in_vcf;
 
@@ -47,7 +47,7 @@ my %ind_id;
 my %sample_type;
 
 # This connects sample ID to NGS ID
-# i.e. %NGS_ID_hash{Tx05B} = "fecalRAD-BC3-BC8"
+# i.e. %NGS_ID_hash{Tx05B} = "TB05a"
 my %NGS_ID_hash;
 
 # This connects individual ID to lists of fecal samples
@@ -61,7 +61,7 @@ while (<INFO>) {
 	my $NGS_ID            = $info[0];
 	my $this_sample_id    = $info[3];
 	my $this_ind_id       = $info[4];
-	my $this_sample_type  = $info[5];
+	my $this_sample_type  = $info[7];
 
 	$sample_id{$NGS_ID}   = $this_sample_id;
 	$ind_id{$NGS_ID}      = $this_ind_id;
@@ -158,7 +158,7 @@ for my $ind (@inds) {
 		my $blood_id_s = $blood_id;
 
 		# See if downsampled blood exists for this pair
-		my $ds_fecal_id = lc (($NGS_ID_hash{$poop_id} =~ /fecalRAD-(.+)/)[0]);
+		my $ds_fecal_id = lc (($NGS_ID_hash{$poop_id} =~ /(.+)/)[0]);
 		my $ds_blood = $NGS_ID_hash{$blood_id} . "_samp-" . $ds_fecal_id;
 		my $ds_blood_file = $prefix . $ds_blood . $suffix;
 		if (-e $ds_blood_file) {
@@ -171,7 +171,7 @@ for my $ind (@inds) {
 		}
 
 		# See if downsampled feces exists for this pair
-		my $ds_blood_id = lc (($NGS_ID_hash{$blood_id} =~ /fecalRAD-(.+)/)[0]);
+		my $ds_blood_id = lc (($NGS_ID_hash{$blood_id} =~ /(.+)/)[0]);
 		my $ds_feces = $NGS_ID_hash{$poop_id} . "_samp-" . $ds_blood_id;
 		my $ds_feces_file = $prefix . $ds_feces . $suffix;
 		if (-e $ds_feces_file) {
