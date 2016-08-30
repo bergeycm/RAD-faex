@@ -11,9 +11,9 @@ library(ggplot2)
 args = commandArgs(trailingOnly = TRUE)
 het.file = args[1]	# e.g. "results/baboon.pass.snp.het"
 
-out.pdf.f       = paste0(het.file, ".pdf")
-out.pdf.hom_obs = paste0(het.file, ".obs_hom.pdf")
-out.txt = paste0(het.file, ".wilcox.txt")
+out.pdf.f       = gsub('results','reports',paste0(het.file, ".pdf"))
+out.pdf.hom_obs = gsub('results','reports',paste0(het.file, ".obs_hom.pdf"))
+out.txt = gsub('results','reports',paste0(het.file, ".wilcox.txt"))
 
 het = read.table(het.file, header=TRUE)
 
@@ -31,13 +31,14 @@ het.info = merge(ind.info, het, by="NGS.ID")
 het.info$ds = c("Raw", "Downsampled")[grepl("samp", het.info$INDV) + 1]
 het.info$is.special = grepl("(H2|HH)", het.info$Sample.ID)
 
-het.info$ds.pair = paste0("fecalRAD-", 
-							str_to_upper(gsub(".*_samp-", "", het.info$INDV)))
+het.info$ds.pair = str_to_upper(gsub(".*_samp-", "", het.info$INDV))
 het.info[which(het.info$ds == "Raw"),]$ds.pair = NA
 het.info$is.ds.pair = het.info$INDV %in% het.info$ds.pair
 
 het.info.pairs = subset(het.info, (het.info$ds == "Downsampled" | het.info$is.ds.pair) & 
 	het.info$is.special == FALSE)
+
+het.info.pairs = droplevels(het.info.pairs)
 
 p = ggplot(het.info.pairs, aes(Sample.type, O.HOM.)) + 
 	geom_boxplot() + 

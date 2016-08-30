@@ -136,5 +136,5 @@ dev.off()
 
 # Work in progress...
 
-fit = lm(hits.by.cov[1,] ~ ind.info$Reads.mapped + reads.mapped2)
-pairs(cbind(resid(fit), ind.info[,c(11:15,18)]), lower.panel=NULL)
+#fit = lm(hits.by.cov[1,] ~ ind.info$Reads.mapped + reads.mapped2)
+#pairs(cbind(resid(fit), ind.info[,c(11:15,18)]), lower.panel=NULL)
