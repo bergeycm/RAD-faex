@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 aws s3 cp s3://chiou-genomics-bucket/FecalSeq/FecalSeq1_BC1_R1.fastq.gz demultiplex/data/
 aws s3 cp s3://chiou-genomics-bucket/FecalSeq/FecalSeq1_BC1_R2.fastq.gz demultiplex/data/
