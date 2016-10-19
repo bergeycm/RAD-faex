@@ -92,6 +92,7 @@ perl ../scripts/prepare_to_process_downsampled.sh
 
 # Fix the headers in the BAM files
 module load picard-tools/1.129
+module load samtools/intel/1.3
 
 for BAM in results/*samp*.PE.bwa.baboon.passed.realn.bam; do
     cp ${BAM} ${BAM}.backup
@@ -214,7 +215,9 @@ plink --noweb --file baboon_snps/baboon.INDIV.pass.snp --make-bed \
 # Rename folder of SNPs to indicate that these were called in non-multi-sample SNP mode
 mv baboon_snps{,_indiv}
 
-
+# ========================================================================================
+### KLC: Stop here
+# ========================================================================================
 
 # ----------------------------------------------------------------------------------------
 #
