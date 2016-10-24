@@ -94,6 +94,9 @@ perl ../scripts/prepare_to_process_downsampled.sh
 module load picard-tools/1.129
 module load samtools/intel/1.3
 
+PICARD_TOOLS_ROOT=/share/apps/picard-tools/1.129/
+SAMTOOLS_ROOT=/share/apps/samtools/1.3/intel/bin/
+
 for BAM in results/*samp*.PE.bwa.baboon.passed.realn.bam; do
     cp ${BAM} ${BAM}.backup
     DS_ID=`echo $BAM | sed -e "s:results/::" -e "s/\.bwa.*//"`
@@ -104,7 +107,7 @@ for BAM in results/*samp*.PE.bwa.baboon.passed.realn.bam; do
         RGPL=Illumina \
         RGPU=Group1 \
         RGSM=${DS_ID}
-    samtools index $BAM
+    ${SAMTOOLS_ROOT}/samtools index $BAM
 done
 
 # ----------------------------------------------------------------------------------------
