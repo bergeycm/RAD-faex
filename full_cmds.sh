@@ -166,30 +166,30 @@ rm baboon_snps/*tmp*
 cp ../pbs/filter_gatk_snps_indiv.pbs pbs/
 qsub -t 1-21 pbs/filter_gatk_snps_indiv.pbs
 
-###	# Fix headers
-###	# Get rid of, e.g., chr10.raw.snps.indels.tmp12_
-###	# And replace it with info on sample used to determine downsampling level
-###	BAMS=(`ls results/*.PE.bwa.baboon.passed.realn.bam`)
-###	
-###	# Downsampled samples to fix
-###	DS_SAMPS=($(grep "^#CHROM" baboon_snps/chr20.INDIV.pass.snp.vcf | \
-###	    tr "\t" "\n" | grep "chr" | sed -e "s/chr20/chr[0-9]\*/"))
-###	
-###	for ((i=0; i < ${#DS_SAMPS}; i++)); do
-###	
-###	    if [[ ${DS_SAMPS[$i]} = *[!\ ]* ]]; then
-###	    	REPLACEE=${DS_SAMPS[$i]}
-###	        echo "    Replacing ${DS_SAMPS[$i]}..."
-###	        DS_IDX=`echo ${DS_SAMPS[$i]} | sed -e "s/.*tmp\([0-9]*\).*/\1/"`
-###	        echo "    ...with item indexed ${DS_IDX}...";
-###	        REPLACER=`echo ${BAMS[$DS_IDX - 1]} | sed -e "s/.*fecalRAD/fecalRAD/" -e "s/\.PE.*//"`
-###	        echo "    ...with ${REPLACE}.";
-###	        
-###	        for file in baboon_snps/chr*.INDIV.pass.snp.vcf; do
-###	            sed -e "s/$REPLACEE/$REPLACER/g" -i $file
-###	        done
-###	    fi
-###	done
+# Fix headers
+# Get rid of, e.g., chr10.raw.snps.indels.tmp12_
+# And replace it with info on sample used to determine downsampling level
+BAMS=(`ls results/*.PE.bwa.baboon.passed.realn.bam`)
+
+# Downsampled samples to fix
+DS_SAMPS=($(grep "^#CHROM" baboon_snps/chr20.INDIV.pass.snp.vcf | \
+    tr "\t" "\n" | grep "chr" | sed -e "s/chr20/chr[0-9]\*/"))
+
+for ((i=0; i < ${#DS_SAMPS}; i++)); do
+
+    if [[ ${DS_SAMPS[$i]} = *[!\ ]* ]]; then
+    	REPLACEE=${DS_SAMPS[$i]}
+        echo "    Replacing ${DS_SAMPS[$i]}..."
+        DS_IDX=`echo ${DS_SAMPS[$i]} | sed -e "s/.*tmp\([0-9]*\).*/\1/"`
+        echo "    ...with item indexed ${DS_IDX}...";
+        REPLACER=`echo ${BAMS[$DS_IDX - 1]} | sed -e "s/.*results\///" -e "s/\.PE.*//"`
+        echo "    ...with ${REPLACER}.";
+
+        for file in baboon_snps/chr*.INDIV.pass.snp.vcf; do
+            sed -e "s/$REPLACEE/$REPLACER/g" -i $file
+        done
+    fi
+done
 
 # Steal steps from make to merge multi-sample SNPs, convert VCF file to PED,
 # and make binary PED (BED)
@@ -219,18 +219,8 @@ plink --noweb --file baboon_snps/baboon.INDIV.pass.snp --make-bed \
 mv baboon_snps{,_indiv}
 
 # ========================================================================================
-### KLC: Stop here
+# --- Commands originally in RADfaex_cmds.sh
 # ========================================================================================
-
-# ----------------------------------------------------------------------------------------
-#
-#
-#
-# --- Move on to commands originally in RADfaex_cmds.sh ----------------------------------
-#
-#
-#
-# ----------------------------------------------------------------------------------------
 
 cd ..
 
@@ -259,7 +249,7 @@ scripts/combine_RADtag_beds.sh
 
 # Called with:
 #     pbs/compute_GC.pbs
-# Generates results/RADtags.gc.bed, 
+# Generates results/RADtags.gc.bed,
 #           results/RADtags.slop${REGION_EXPANSION}.bed
 #           results/RADtags.slop${REGION_EXPANSION}.gc.bed
 
@@ -290,17 +280,15 @@ qsub pbs/call_CpG_finder.pbs
 
 qsub pbs/call_closest_CpG_finder.pbs
 
-# ========================================================================================
-#  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-# ========================================================================================
-
 # ----------------------------------------------------------------------------------------
 # --- Compute coverage within all RADtags (from simulation)
 # ----------------------------------------------------------------------------------------
 
 # Generates results/${ID}.gt1.cov.bed
 
-qsub -t 0-78 pbs/get_RAD_cov.pbs
+TOTAL_IND=$(ls NGS-map/results/*.PE.bwa.baboon.passed.realn.bam | grep -v "samp" | wc -l | cut -d' ' -f1)
+
+qsub -t 0-$((TOTAL_IND - 1)) pbs/get_RAD_cov.pbs
 
 # ----------------------------------------------------------------------------------------
 # --- Combine RADtag coverage from all individuals
@@ -308,7 +296,7 @@ qsub -t 0-78 pbs/get_RAD_cov.pbs
 
 # Generates results/RADtag.coverage.all.txt
 
-scripts/combine_coverage.sh
+sh scripts/combine_coverage.sh
 
 # ----------------------------------------------------------------------------------------
 # --- Plot heatmap of coverage and RADtag length
@@ -316,7 +304,7 @@ scripts/combine_coverage.sh
 
 # Generates reports/*.gt1.cov.pdf
 
-scripts/coverage_length_heatmap.R
+Rscript scripts/coverage_length_heatmap.R
 
 # ----------------------------------------------------------------------------------------
 # --- Combine RADtag info
@@ -334,11 +322,7 @@ qsub pbs/combine_RAD_info.pbs
 #           reports/RADtag_count_curves_by_total_mapped.pdf
 # Note the work in progress: Plot residuals by various variables
 
-scripts/plot_coverage.R
-
-# ========================================================================================
-#  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-# ========================================================================================
+Rscript scripts/plot_coverage.R
 
 # ----------------------------------------------------------------------------------------
 # --- Model RADtag coverage (to explain inter-RADtag variation) : SKIP
@@ -351,27 +335,12 @@ scripts/plot_coverage.R
 # qsub pbs/model_RADtag_cvg_10000.pbs
 # qsub pbs/model_RADtag_cvg_20000.pbs
 
-# ========================================================================================
-#  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-# ========================================================================================
-
 # ----------------------------------------------------------------------------------------
 # --- Compute and explore heterozygosity
 # ----------------------------------------------------------------------------------------
 
-scripts/compute_het.sh
-scripts/parse_heterozygosity.R results/baboon.pass.snp.het
-
-
-
-#########################################################
-## KENNY STOPPED HERE
-#########################################################
-
-
-
-
-
+sh scripts/compute_het.sh
+Rscript scripts/parse_heterozygosity.R results/baboon.pass.snp.het
 
 # ----------------------------------------------------------------------------------------
 # --- Quantify allelic dropout by comparing blood and fecal DNA from single individual
@@ -380,23 +349,14 @@ scripts/parse_heterozygosity.R results/baboon.pass.snp.het
 # Multi-sample mode
 perl scripts/quantify_ADO.pl NGS-map/baboon_snps_multi/baboon.pass.snp.vcf.gz
 
-
-
-
-
-
-
-
-
-
 # Individual mode
 perl scripts/quantify_ADO.pl \
     NGS-map/baboon_snps_indiv/baboon.INDIV_DIPLOID.pass.snp.vcf.gz
 
-scripts/parse_all_discordance_matrices.sh
+sh scripts/parse_all_discordance_matrices.sh
 
-scripts/explore_discordance.R results/discordance.multi.txt
-scripts/explore_discordance.R results/discordance.indiv.txt
+Rscript scripts/explore_discordance.R results/discordance.multi.txt
+Rscript scripts/explore_discordance.R results/discordance.indiv.txt
 
 # ----------------------------------------------------------------------------------------
 # --- Compute stats on missingness
@@ -409,5 +369,4 @@ sh scripts/explore_missingness.sh
 Rscript scripts/explore_missingness_further.R
 cd /scratch/cmb433/fecalRAD/RAD_faex/
 
-
-
+exit
