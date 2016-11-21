@@ -346,6 +346,8 @@ Rscript scripts/parse_heterozygosity.R results/baboon.pass.snp.het
 # --- Quantify allelic dropout by comparing blood and fecal DNA from single individual
 # ----------------------------------------------------------------------------------------
 
+module load vcftools
+
 # Multi-sample mode
 perl scripts/quantify_ADO.pl NGS-map/baboon_snps_multi/baboon.pass.snp.vcf.gz
 
@@ -368,5 +370,10 @@ cd /scratch/cmb433/fecalRAD/NGS-map/
 sh scripts/explore_missingness.sh
 Rscript scripts/explore_missingness_further.R
 cd /scratch/cmb433/fecalRAD/RAD_faex/
+
+# ----------------------------------------------------------------------------------------
+# --- Make MDS plot
+# ----------------------------------------------------------------------------------------
+
 
 exit
