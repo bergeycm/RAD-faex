@@ -5,7 +5,9 @@
 # ========================================================================================
 
 # Worth it to save STDERR with:
-# perl scripts/quantify_ADO.pl 2> reports/quantify_ADO_stderr.txt
+# perl scripts/quantify_ADO.pl \
+#   NGS-map/baboon_snps_indiv/baboon.INDIV_DIPLOID.pass.snp.vcf.gz \
+#   2> reports/quantify_ADO_stderr.txt
 
 use strict;
 use warnings;
@@ -19,6 +21,9 @@ my $suffix = ".PE.bwa.baboon.passed.realn.flt.vcf";
 
 # VCF file with SNP calls from GATK
 # e.g. "NGS-map/baboon_snps_indiv/baboon.INDIV_DIPLOID.pass.snp.vcf.gz"
+if (!defined $ARGV[0]) {
+    die "ERROR: Pass VCF file with SNP calls from GATK."
+}
 my $in_vcf = shift;
 chomp $in_vcf;
 
