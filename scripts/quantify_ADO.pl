@@ -12,7 +12,7 @@
 use strict;
 use warnings;
 
-my @inds = ("Tx01", "Tx02", "Tx05", "Tx07", "Tx09", "Tx10");
+my @inds = ("Tx01", "Tx02", "Tx05", "Tx09", "Tx10");
 
 my $ind_info_file = "data/individual_info.csv";
 
@@ -163,9 +163,10 @@ for my $ind (@inds) {
 		my $blood_id_s = $blood_id;
 
 		# See if downsampled blood exists for this pair
-		my $ds_fecal_id = lc (($NGS_ID_hash{$poop_id} =~ /(.+)/)[0]);
+		my $ds_fecal_id = ($NGS_ID_hash{$poop_id} =~ /(.+)/)[0];
 		my $ds_blood = $NGS_ID_hash{$blood_id} . "_samp-" . $ds_fecal_id;
 		my $ds_blood_file = $prefix . $ds_blood . $suffix;
+		print STDERR "Looking for downsampled blood: [$ds_blood_file]\n";
 		if (-e $ds_blood_file) {
 			$blood_to_compare = $ds_blood;
 			if ($blood_to_compare !~ /PE$/) {
@@ -176,16 +177,26 @@ for my $ind (@inds) {
 		}
 
 		# See if downsampled feces exists for this pair
-		my $ds_blood_id = lc (($NGS_ID_hash{$blood_id} =~ /(.+)/)[0]);
+		my $ds_blood_id = ($NGS_ID_hash{$blood_id} =~ /(.+)/)[0];
 		my $ds_feces = $NGS_ID_hash{$poop_id} . "_samp-" . $ds_blood_id;
 		my $ds_feces_file = $prefix . $ds_feces . $suffix;
+		print STDERR "Looking for downsampled feces: [$ds_feces_file]\n";
 		if (-e $ds_feces_file) {
+			print STDERR "\tFound\n";
 			$poop_to_compare = $ds_feces;
 			if ($poop_to_compare !~ /PE$/) {
 				$poop_to_compare .= ".PE";
 			}
 			$blood_to_compare = $NGS_ID_hash{$blood_id} . ".PE";
 			$poop_id_s .= "-samp";
+		}
+
+		# Die if neither downsampled blood nor downsample feces exists,
+		# because that means something bad happened with downsampling script.
+		if ((! -e $ds_feces_file) && (! -e $ds_blood_file)) {
+			print STDERR "ERROR: For this pair, neither downsampled blood nor ";
+			print STDERR "downsampled feces exists. Aborting.";
+			exit;
 		}
 
 		print STDERR "\t\tComparing blood $blood_to_compare to poop $poop_to_compare.\n";
@@ -235,7 +246,7 @@ for my $ind (@inds) {
 		system($vcf_cmd_site_discord);
 		print STDERR "CMD 8: [" . $vcf_cmd_discord_matrix . "]\n";
 		system($vcf_cmd_discord_matrix);
-		
+
 		# Delete temporary VCF files
 		system("rm $blood_vcf");
 		system("rm $poop_vcf");
