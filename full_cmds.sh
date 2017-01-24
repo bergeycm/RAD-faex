@@ -355,6 +355,7 @@ perl scripts/quantify_ADO.pl NGS-map/baboon_snps_multi/baboon.pass.snp.vcf.gz
 perl scripts/quantify_ADO.pl \
     NGS-map/baboon_snps_indiv/baboon.INDIV_DIPLOID.pass.snp.vcf.gz
 
+module load r/intel/3.3.1
 sh scripts/parse_all_discordance_matrices.sh
 
 Rscript scripts/explore_discordance.R results/discordance.multi.txt
@@ -366,14 +367,9 @@ Rscript scripts/explore_discordance.R results/discordance.indiv.txt
 
 # This uses SNPs called within one individual, not the results of multi-sample SNP calling
 
-cd /scratch/cmb433/fecalRAD/NGS-map/
-sh scripts/explore_missingness.sh
-Rscript scripts/explore_missingness_further.R
-cd /scratch/cmb433/fecalRAD/RAD_faex/
-
-# ----------------------------------------------------------------------------------------
-# --- Make MDS plot
-# ----------------------------------------------------------------------------------------
-
+cd NGS-map/
+sh ../scripts/explore_missingness.sh
+Rscript ../scripts/explore_missingness_further.R
+cd ..
 
 exit
