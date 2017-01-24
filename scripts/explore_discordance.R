@@ -41,6 +41,8 @@ boxplot(c(d.raw$file1.uniq.perc, d.raw$file2.uniq.perc) ~
 d.ds.m = data.frame(uniq.perc = c(d.ds$file1.uniq.perc, d.ds$file2.uniq.perc),
 	samp=c(rep("blood", nrow(d.ds)), rep("feces", nrow(d.ds))))
 
+write.csv(d.ds.m,file=paste0(d.file, ".table.csv"),row.names=FALSE)
+
 p = ggplot(d.ds.m, aes(samp, uniq.perc)) + 
 	geom_boxplot() + 
 	geom_point() + 
