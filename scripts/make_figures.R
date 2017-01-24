@@ -93,10 +93,13 @@ info$FID = short.names[as.character(info$id)]
 
 mds.ind = merge(info, mds, by="FID")
 
+# SNPRC only MDS (only these have blood so is a better plot)
+
 p = ggplot(subset(mds.ind,origin %in% 'captivity'), aes(C1, C2, color=ind.id, shape=type)) +
 	geom_point(size=3) +
 #	coord_fixed() +
-	scale_color_manual(name="Individual",values=c('#7fc97f','#beaed4','#fdc086','#ffff99','#386cb0','#f0027f')) +
+	scale_color_manual(name="Individual",
+		values=c('#7fc97f','#beaed4','#fdc086','#ffff99','#386cb0','#f0027f')) +
 	scale_shape_manual(name="Sample Type", values = c(16, 17, 1),guide=FALSE) +
 	xlab("Dimension 1") + ylab("Dimension 2") +
 	theme_classic() +
@@ -106,36 +109,58 @@ ggsave(p,file='reports/fecalseq_mds_snprc.pdf',width=6,height=6,useDingbats=FALS
 p = ggplot(within(mds.ind,{ind.id=as.character(ind.id); ind.id[-grep('SNPRC',ind.id)] = 'Zambian animals'}), aes(C1, C2, color=ind.id, shape=type)) +
 	geom_point(size=3) +
 #	coord_fixed() +
-	scale_color_manual(name="Individual",values=c('#7fc97f','#beaed4','#fdc086','#ffff99','#386cb0','#f0027f','#000000')) +
-	scale_shape_manual(name="Sample Type", values = c(16, 17, 1),guide=FALSE) +
+	scale_color_manual(name="Individual",
+		values=c('#7fc97f','#beaed4','#fdc086','#ffff99','#386cb0','#f0027f','#000000')) +
+	scale_shape_manual(name="Sample Type", values = c(16, 17, 1), guide=FALSE) +
 	xlab("Dimension 1") + ylab("Dimension 2") +
 	theme_classic() +
 	theme(legend.position='bottom')
 ggsave(p,file='reports/fecalseq_mds_all.pdf',width=6,height=6,useDingbats=FALSE)
 
-
-
-
-
+# Missingness
 
 p = ggplot(subset(mds.ind,origin %in% 'captivity'), aes(C1.missing, C2.missing, color=ind.id, shape=type)) +
 	geom_point(size=3) +
 #	coord_fixed() +
-	scale_color_manual(name="Individual",values=c('#7fc97f','#beaed4','#fdc086','#ffff99','#386cb0','#f0027f')) +
-	scale_shape_manual(name="Sample Type", values = c(16, 17, 1),guide=FALSE) +
+	scale_color_manual(name="Individual",
+		values=c('#7fc97f','#beaed4','#fdc086','#ffff99','#386cb0','#f0027f')) +
+	scale_shape_manual(name="Sample Type", values = c(16, 17, 1), guide=FALSE) +
 	xlab("Dimension 1") + ylab("Dimension 2") +
 	theme_classic() +
 	theme(legend.position='bottom')
 ggsave(p,file='reports/fecalseq_ibm_snprc.pdf',width=6,height=6,useDingbats=FALSE)
 
+# Discordance
 
+uniq.alleles = read.csv('results/discordance.multi.txt.table.csv')
 
+p = ggplot(uniq.alleles, aes(samp, uniq.perc)) + 
+	geom_boxplot() + 
+	geom_point(aes(color=whoami),size=3,shape=21) +
+	scale_color_manual(name="Individual",
+		values=c('#7fc97f','#beaed4','#fdc086','#386cb0','#f0027f'), guide=FALSE) +
+	xlab("Sample type") + 
+	ylab ("Proportion unique alleles") +
+	theme_classic()
+ggsave(p,file='reports/fecalseq_discordance_multi.pdf',width=3,height=3,useDingbats=FALSE)
 
+heterozygosity = read.csv('results/baboon.pass.snp.het.table.csv')
+heterozygosity$ind.id = paste0('SNPRC #',heterozygosity$Individual.ID2)
 
+p = ggplot(heterozygosity, aes(Sample.type, F)) + 
+	geom_boxplot() + 
+	geom_point(aes(color=ind.id, size=N_SITES), pch=1) +
+	xlab("Sample type") + 
+	ylab(expression(italic(F))) + 
+	scale_color_manual(name="Individual",
+		values=c('#7fc97f','#beaed4','#fdc086','#386cb0','#f0027f'), guide=FALSE) +
+	scale_size_continuous(name='Num. sites',guide=FALSE) +
+	theme_classic()
+ggsave(p,file='reports/fecalseq_inbreeding_multi.pdf',width=3,height=3,useDingbats=FALSE)
 
+wilcox.test(uniq.perc~samp,uniq.alleles,paired=TRUE)
 
-
-
+wilcox.test(F~ds,heterozygosity,paired=TRUE)
 
 
 

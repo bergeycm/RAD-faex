@@ -23,6 +23,10 @@ d$ds.blood = grepl("samp", d$file1)
 d$ds.feces = grepl("samp", d$file2)
 d$is.special = grepl("(H2|HH)", d$file2)
 
+d$whoami = gsub('(Tx[0-9]{2}).+','\\1',as.character(d$file1))
+
+d$comparison.id = 1:nrow(d)
+
 # How downsampling affects the distance
 boxplot(d$match.perc ~ d$ds)
 
@@ -39,13 +43,19 @@ boxplot(c(d.raw$file1.uniq.perc, d.raw$file2.uniq.perc) ~
 	c(rep("blood", nrow(d.raw)), rep("feces", nrow(d.raw))))
 
 d.ds.m = data.frame(uniq.perc = c(d.ds$file1.uniq.perc, d.ds$file2.uniq.perc),
-	samp=c(rep("blood", nrow(d.ds)), rep("feces", nrow(d.ds))))
+	samp=c(rep("blood", nrow(d.ds)), rep("feces", nrow(d.ds))),
+	whoami=c(as.character(d.ds$file1), as.character(d.ds$file2)),
+	comparison.id=c(d.ds$comparison.id,d.ds$comparison.id))
+
+d.ds.m$whoami = gsub('(Tx[0-9]{2}).+','\\1',d.ds.m$whoami)
+
+warning('p-value is ',wilcox.test(uniq.perc~samp,data=d.ds.m,paired=TRUE)$p.value)
 
 write.csv(d.ds.m,file=paste0(d.file, ".table.csv"),row.names=FALSE)
 
 p = ggplot(d.ds.m, aes(samp, uniq.perc)) + 
 	geom_boxplot() + 
-	geom_point() + 
+	geom_point(aes(color=whoami)) + 
 	xlab("Sample type") + 
 	ylab ("Proportion unique alleles")
 

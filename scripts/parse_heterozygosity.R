@@ -14,7 +14,7 @@ het.file = args[1]	# e.g. "results/baboon.pass.snp.het"
 out.pdf.f       = gsub('results','reports',paste0(het.file, ".pdf"))
 out.pdf.hom_obs = gsub('results','reports',paste0(het.file, ".obs_hom.pdf"))
 out.txt = gsub('results','reports',paste0(het.file, ".wilcox.txt"))
-out.table = gsub('results','reports',paste0(het.file, ".table.csv"))
+out.table = gsub('results','results',paste0(het.file, ".table.csv"))
 
 het = read.table(het.file, header=TRUE)
 
@@ -64,10 +64,16 @@ q = ggplot(het.info.pairs, aes(Sample.type, F)) +
 ggsave(out.pdf.hom_obs, plot=p)
 ggsave(out.pdf.f,       plot=q)
 
-write.csv(het.info.pairs,file=out.table,row.names=FALSE)
+rownames(het.info) = het.info$INDV
+
+het.info.paired = rbind(het.info.pairs,het.info[gsub('.+?-(.+?\\.PE)','\\1',as.character(het.info.pairs$INDV)),])
+
+write.csv(het.info.paired,file=out.table,row.names=FALSE)
 
 # Test to see if F differs
 sink(out.txt)
 	wilcox.test(het.info.pairs[het.info.pairs$Sample.type == "feces",]$F, 
 		het.info.pairs[het.info.pairs$Sample.type == "blood",]$F)
+		
+	wilcox.test(F~ds,data=het.info.paired,paired=TRUE)
 sink()
