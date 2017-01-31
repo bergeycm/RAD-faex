@@ -372,4 +372,10 @@ sh ../scripts/explore_missingness.sh
 Rscript ../scripts/explore_missingness_further.R
 cd ..
 
+# ----------------------------------------------------------------------------------------
+# --- Make figures
+# ----------------------------------------------------------------------------------------
+
+Rscript scripts/make_figures.R
+
 exit
