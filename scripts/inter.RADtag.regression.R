@@ -73,7 +73,7 @@ rm(list=c("info.full", "cvg.full"))
 # --- Bring in individual info
 # ----------------------------------------------------------------------------------------
 
-ind.info = read.csv("data/fecalRAD_individual_info.csv")
+ind.info = read.csv("data/individual_info.csv")
 
 # Add sample names to individual coverage
 # Warning: This assumes that the individuals are in the right order, 

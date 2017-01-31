@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 options(stringsAsFactors = FALSE)
 
 library(reshape2)
@@ -125,18 +127,17 @@ names(rad.info.feces) = gsub("\\.feces", "", names(rad.info.feces))
 # --- Improve length variable
 # ----------------------------------------------------------------------------------------
 
-
-# Compute deviation from median
-rad.info.all$len.deviation = abs(rad.info.all$length - med.len)
-rad.info.blood$len.deviation = rad.info.all$len.deviation
-rad.info.feces$len.deviation = rad.info.all$len.deviation
-
 # Final median, modal length for RADtags that have coverage
 
 hit.lens = rad.info.all[rad.info.all$rad.mean.cov > 7,]$length
 hit.lens.uniq = unique(hit.lens)
 mode.len = hit.lens.uniq[which.max(tabulate(match(hit.lens, hit.lens.uniq)))]
 med.len  = median(rad.info.all[rad.info.all$rad.mean.cov > 7,]$length)
+
+# Compute deviation from median
+rad.info.all$len.deviation = abs(rad.info.all$length - med.len)
+rad.info.blood$len.deviation = rad.info.all$len.deviation
+rad.info.feces$len.deviation = rad.info.all$len.deviation
 
 # Add a "type" column for ggplot2
 
@@ -182,6 +183,11 @@ info.cvg.m.ind = within(info.cvg.m.ind,{
 	Individual.ID = factor(Individual.ID)
 	Sample.type = factor(Sample.type)
 })
+
+# We only need rows where the number of reads is greater than 0
+info.cvg.m.ind = subset(info.cvg.m.ind,num.reads > 0)
+
+info.cvg.m.ind = info.cvg.m.ind[cols.to.keep]
 
 # Save as R Data file because the file is pretty big
 
