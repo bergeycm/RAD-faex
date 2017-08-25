@@ -1,4 +1,7 @@
 # RAD-faex
+
+[![DOI](https://zenodo.org/badge/44268837.svg)](https://zenodo.org/badge/latestdoi/44268837)
+
 This repository contains code used in the development of the **FecalSeq** method for enriching host DNA from feces, 
 by Kenneth Chiou ([website](http://www.kennychiou.com)) and Christina Bergey ([website](http://www.christinabergey.com)).
 A paper describing the method been submitted for publication and is [available as a preprint](http://biorxiv.org/content/early/2015/11/25/032870)
